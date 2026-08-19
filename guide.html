@@ -1,0 +1,155 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>
+<title>How Fretwork Works</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Albert+Sans:wght@400;500;600&family=Spline+Sans+Mono:wght@400;600&display=swap">
+<style>
+:root {
+  --bg: #f6f1e6; --surface: #fdfaf3; --surface2: #efe8d8;
+  --border: #ddd2bc; --ink: #2b2318; --muted: #7d7159;
+  --accent: #a4762a; --accent-ink: #fdfaf3; --accent-soft: #a4762a22;
+  --teal: #2c8977;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1e1812; --surface: #292117; --surface2: #352b1d;
+    --border: #493b26; --ink: #efe7d4; --muted: #a89a7e;
+    --accent: #d9a84e; --accent-ink: #241a0c; --accent-soft: #d9a84e2b;
+    --teal: #48b19a;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1e1812; --surface: #292117; --surface2: #352b1d;
+  --border: #493b26; --ink: #efe7d4; --muted: #a89a7e;
+  --accent: #d9a84e; --accent-ink: #241a0c; --accent-soft: #d9a84e2b;
+  --teal: #48b19a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: 'Albert Sans', system-ui, sans-serif;
+  font-size: 15.5px; line-height: 1.6;
+}
+main { max-width: 860px; margin: 0 auto; padding: 44px 22px 60px; }
+.eyebrow {
+  font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent); font-weight: 600; margin: 0 0 10px;
+}
+h1 {
+  font-family: 'Instrument Serif', Georgia, serif; font-weight: 400;
+  font-size: clamp(34px, 6vw, 46px); margin: 0 0 10px; text-wrap: balance;
+}
+.lede { color: var(--muted); max-width: 56ch; margin: 0 0 36px; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 28px; }
+@media (max-width: 700px) { .layout { grid-template-columns: 1fr; } }
+
+.flow { list-style: none; margin: 0; padding: 0; }
+.step {
+  position: relative; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px 20px 18px 66px;
+}
+.step + .step { margin-top: 44px; }
+.step + .step::before {
+  content: '↓'; position: absolute; top: -36px; left: 30px;
+  color: var(--accent); font-size: 20px; line-height: 28px;
+}
+.num {
+  position: absolute; left: 18px; top: 18px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--accent); color: var(--accent-ink);
+  font-family: 'Spline Sans Mono', monospace; font-weight: 600; font-size: 15px;
+  display: grid; place-items: center;
+}
+.step h2 {
+  font-family: 'Instrument Serif', Georgia, serif; font-weight: 400;
+  font-size: 22px; margin: 0 0 4px;
+}
+.step p { margin: 0; color: var(--muted); font-size: 14px; }
+.step .do {
+  display: block; margin-top: 8px; font-family: 'Spline Sans Mono', monospace;
+  font-size: 12px; color: var(--ink);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 7px; padding: 6px 10px;
+}
+
+.notes { display: flex; flex-direction: column; gap: 16px; }
+.note {
+  border: 1px solid var(--border); border-radius: 12px;
+  background: var(--surface2); padding: 14px 16px; font-size: 13.5px;
+}
+.note h3 {
+  margin: 0 0 6px; font-size: 11.5px; font-weight: 600;
+  letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent);
+}
+.note.lib h3 { color: var(--teal); }
+.note p { margin: 0; color: var(--muted); }
+.note b { color: var(--ink); font-weight: 600; }
+.loopglyph { color: var(--accent); font-size: 17px; }
+
+.cta {
+  margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.cta a {
+  background: var(--accent); color: var(--accent-ink); text-decoration: none;
+  border-radius: 999px; padding: 10px 22px; font-weight: 600; font-size: 14.5px;
+}
+.cta a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.cta span { color: var(--muted); font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main>
+  <p class="eyebrow">Fretwork · user guide</p>
+  <h1>How Fretwork works</h1>
+  <p class="lede">One loop, four moves: describe the harmony, let the app find the scales, read why they work, then get them under your fingers.</p>
+
+  <div class="layout">
+    <ol class="flow">
+      <li class="step">
+        <span class="num">1</span>
+        <h2>Build the progression</h2>
+        <p>2–12 chord cards, any root, 21 chord types. Click a symbol to hear it; ▶ plays the whole progression. The card you click becomes the <em>focused</em> chord.</p>
+        <span class="do">Studio → Progression</span>
+      </li>
+      <li class="step">
+        <span class="num">2</span>
+        <h2>Pick scales that fit</h2>
+        <p>Full fits grouped by mode family, near-fits with the clashing chord named, and chord-by-chord suggestions ranked by context. Chips light the neck — up to four scales overlay in color.</p>
+        <span class="do">Studio → Scales that fit</span>
+      </li>
+      <li class="step">
+        <span class="num">3</span>
+        <h2>Read the theory</h2>
+        <p>Why each scale fits, chord tones vs. tensions vs. avoid notes, target tones, voice-leading moves, arpeggio ideas, and a generated lick in tab — all following the focused chord.</p>
+        <span class="do">Studio → Harmony &amp; theory</span>
+      </li>
+      <li class="step">
+        <span class="num">4</span>
+        <h2>Play it on the neck</h2>
+        <p>24 frets with degree-colored markers. Zoom from the full neck into CAGED positions, the seven 3-notes-per-string patterns, or click together a custom shape. Every note plays and explains itself.</p>
+        <span class="do">Studio → The neck</span>
+      </li>
+    </ol>
+
+    <div class="notes">
+      <div class="note lib">
+        <h3>Theory library</h3>
+        <p>Searchable scales, chords, and harmony topics. Progression entries have <b>Send to Studio</b> — they drop straight into step 1; scale entries have <b>View on neck</b>.</p>
+      </div>
+      <div class="note">
+        <h3><span class="loopglyph">↻</span> The loop</h3>
+        <p>Change a chord or scale and <b>every panel recomputes</b> — suggestions re-rank, theory rewrites, the neck repaints. There is no "done"; the loop is the practice session.</p>
+      </div>
+      <div class="note">
+        <h3>Focus follows you</h3>
+        <p>The note map, arpeggios, lick, and the dashed rings on the fretboard all track whichever chord card you clicked last.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta">
+    <a href="https://claude.ai/code/artifact/9088c6df-b44c-46b0-98c5-accf1a64ae94">Open Fretwork</a>
+    <span>Runs in any browser — audio synthesized live, nothing to install.</span>
+  </div>
+</main>
+</body></html>

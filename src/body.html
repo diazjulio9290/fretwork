@@ -1,0 +1,109 @@
+<div id="app">
+<div id="splash">
+  <div class="splash-strings" aria-hidden="true">
+    <span style="top:14%;height:1px;animation-delay:.05s"></span>
+    <span style="top:27%;height:1.3px;animation-delay:.14s"></span>
+    <span style="top:40%;height:1.7px;animation-delay:.23s"></span>
+    <span style="top:60%;height:2.1px;animation-delay:.32s"></span>
+    <span style="top:73%;height:2.5px;animation-delay:.41s"></span>
+    <span style="top:86%;height:3px;animation-delay:.5s"></span>
+    <i style="left:11%;top:49%"></i><i style="left:87%;top:49%"></i>
+    <i style="left:30%;top:11%"></i><i style="left:68%;top:88%"></i>
+  </div>
+  <div class="splash-card">
+    <p class="splash-eyebrow">harmony · modes · improvisation</p>
+    <h1 class="splash-title">Fretwork</h1>
+    <p class="splash-tag">Build a progression. Light up the neck. Understand why.</p>
+    <button id="enter-btn" class="splash-enter">Enter</button>
+  </div>
+</div>
+<header class="top">
+  <div class="brand">
+    <span class="wordmark">Fretwork</span>
+    <span class="tagline">harmony · modes · improvisation</span>
+  </div>
+  <nav class="tabs" aria-label="Views">
+    <button class="tab-btn" data-action="tab" data-tab="studio">Studio</button>
+    <button class="tab-btn" data-action="tab" data-tab="library">Library</button>
+  </nav>
+  <button id="theme-btn" class="btn theme-btn" data-action="theme" title="Theme">◐ auto</button>
+</header>
+
+<main id="view-studio">
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Progression</h2>
+      <div class="actions">
+        <span id="prog-count" class="muted small"></span>
+        <button class="btn" data-action="play-prog">▶ Play</button>
+        <button class="btn" id="add-chord" data-action="add-chord">＋ Add chord</button>
+      </div>
+    </div>
+    <div id="prog-rail" class="prog-rail"></div>
+    <p class="muted small">Click a card to focus it (theory panels follow the focused chord) · click the big symbol to hear it · 2–12 chords.</p>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Scales that fit</h2></div>
+    <div id="sugg-full"></div>
+    <details id="sugg-near" class="near"><summary>Near fits — one clashing chord</summary><div></div></details>
+    <div id="sugg-perchord"></div>
+    <div id="selected-scales"></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Harmony &amp; theory</h2></div>
+    <div id="theory-panel" class="theory-grid"></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>The neck</h2>
+      <div class="fret-controls">
+        <label class="ctl">Labels
+          <select id="label-mode">
+            <option value="names" selected>Note names</option>
+            <option value="intervals">Intervals (♭3, ♯4…)</option>
+            <option value="degrees">Degrees (1–7)</option>
+            <option value="none">None</option>
+          </select>
+        </label>
+        <label class="ctl">View
+          <select id="view-mode">
+            <option value="full" selected>Full neck</option>
+            <option value="caged">CAGED positions</option>
+            <option value="3nps">3 notes per string</option>
+            <option value="custom">Custom shape</option>
+          </select>
+        </label>
+        <label class="chk"><input type="checkbox" id="opt-roots" checked> emphasize roots</label>
+        <label class="chk"><input type="checkbox" id="opt-rings" checked> ring chord tones</label>
+        <span id="pos-controls" class="pos-controls" hidden>
+          <button class="btn" data-action="pos-prev" aria-label="Previous position">‹</button>
+          <span id="pos-label" class="small"></span>
+          <button class="btn" data-action="pos-next" aria-label="Next position">›</button>
+        </span>
+        <button class="btn" id="clear-custom" data-action="clear-custom" hidden>Clear shape</button>
+      </div>
+    </div>
+    <div class="fret-scroll"><div id="fret-wrap"></div></div>
+    <div id="fret-legend" class="legend"></div>
+    <div id="fret-status" class="status mono" aria-live="polite">Click any note to hear it and see what it does over the focused chord.</div>
+  </section>
+</main>
+
+<main id="view-library" hidden>
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Theory library</h2>
+      <input id="lib-search" type="search" placeholder="Search scales, chords, harmony…" aria-label="Search the library">
+    </div>
+    <div id="lib-cats" class="chip-row lib-cats"></div>
+    <div id="lib-list" class="lib-grid"></div>
+  </section>
+</main>
+
+<footer class="foot">
+  Build a progression → light up the neck → understand why. All sound is synthesized live in your browser.
+</footer>
+</div>
