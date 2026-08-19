@@ -1,5 +1,5 @@
 <title>Fretwork</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Albert+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&family=Albert+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;600&display=swap">
 <style>
 /* ============================================================
    Fretwork — styles
@@ -289,50 +289,147 @@ g.note.clickable { cursor: pointer; }
 }
 
 /* ---------- splash ----------
-   Deliberately single-theme: the splash is the dark-wood stage
-   curtain in both light and dark mode; every color is explicit. */
+   Ported from the user's Claude Design canvas ("fretwork-splash").
+   Deliberately single-theme: dark-wood stage curtain in both modes;
+   every color explicit. Accent: #e8c06a gold. */
 #splash {
-  position: fixed; inset: 0; z-index: 50;
-  background: radial-gradient(ellipse at 50% 38%, #3f2a19 0%, #26190f 55%, #170f09 100%);
-  display: grid; place-items: center; overflow: hidden;
+  position: fixed; inset: 0; z-index: 50; overflow: hidden auto;
+  background: radial-gradient(120% 90% at 50% 45%, #3a2a1e 0%, #241a13 48%, #150f0b 100%);
+  color: #f3ead9;
   transition: opacity 0.7s ease, visibility 0.7s;
 }
 #splash.gone { opacity: 0; visibility: hidden; pointer-events: none; }
-.splash-strings { position: absolute; inset: 0; }
-.splash-strings span {
-  position: absolute; left: 0; right: 0; display: block;
-  background: #cdbfa2; opacity: 0.16; transform-origin: left center;
-  animation: strum 1.1s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+.sp-frets { position: absolute; inset: 0; opacity: 0.5; }
+.sp-fret {
+  position: absolute; top: 0; bottom: 0; width: 1px;
+  background: linear-gradient(to bottom, rgba(255,238,205,0) 0%, rgba(255,238,205,.16) 12%, rgba(255,238,205,.16) 88%, rgba(255,238,205,0) 100%);
 }
-.splash-strings i {
-  position: absolute; width: 13px; height: 13px; border-radius: 50%;
-  background: #e9e2cf; opacity: 0.1;
+.sp-markers { position: absolute; inset: 0; }
+.sp-marker { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: rgba(255,238,205,.1); }
+.sp-strings { position: absolute; inset: 0; }
+.sp-string { position: absolute; left: 0; right: 0; cursor: pointer; display: flex; align-items: center; }
+.sp-line { position: relative; flex: 1; height: 1px; }
+.sp-line-base { position: absolute; inset: 0; background: rgba(240,225,200,.22); transform-origin: center; }
+.sp-line-glow {
+  position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px;
+  border-radius: 2px; background: #e8c06a; box-shadow: 0 0 22px 3px rgba(232,192,106,.45);
+  opacity: 0; transform-origin: center;
 }
-.splash-card {
-  position: relative; text-align: center; padding: 24px;
-  animation: rise 0.9s ease 0.35s both;
+.sp-string-label {
+  position: absolute; left: 26px; font-family: 'DM Mono', ui-monospace, monospace;
+  font-size: 11px; letter-spacing: 0.18em; color: rgba(243,234,217,.28);
+  background: #1e1610; padding: 0 8px;
 }
-.splash-eyebrow {
-  color: #a89a7e; font-size: 12.5px; letter-spacing: 0.22em;
-  text-transform: uppercase; margin: 0 0 6px;
+.sp-vignette {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(46% 44% at 50% 46%, rgba(21,15,11,.94) 0%, rgba(21,15,11,.72) 55%, rgba(21,15,11,0) 100%);
 }
-.splash-title {
-  font-family: 'Instrument Serif', Georgia, serif; font-weight: 400;
-  color: #efe7d4; font-size: clamp(58px, 13vw, 100px);
-  line-height: 1.05; margin: 0;
+.sp-center {
+  position: relative; min-height: 100vh; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 30px; padding: 96px 32px;
 }
-.splash-tag { color: #cdbfa2; opacity: 0.75; margin: 10px 0 0; font-size: 15.5px; }
-.splash-enter {
-  margin-top: 30px; border: none; cursor: pointer;
-  background: #d9a84e; color: #241a0c;
-  border-radius: 999px; padding: 14px 46px;
-  font: 600 16px 'Albert Sans', sans-serif; letter-spacing: 0.04em;
-  transition: transform 0.15s ease, background 0.15s ease;
+.sp-center button { pointer-events: auto; }
+.sp-eyebrow { display: flex; align-items: center; gap: 14px; animation: fw-fade 1s ease 0.1s both; }
+.sp-eyebrow i { width: 34px; height: 1px; background: rgba(243,234,217,.25); }
+.sp-eyebrow span {
+  font-family: 'DM Mono', ui-monospace, monospace; font-size: 12px;
+  letter-spacing: 0.34em; text-transform: uppercase; color: rgba(243,234,217,.55);
 }
-.splash-enter:hover { background: #e7bc66; transform: translateY(-1px); }
-.splash-enter:focus-visible { outline: 2px solid #efe7d4; outline-offset: 3px; }
-@keyframes strum { from { transform: scaleX(0); opacity: 0; } }
-@keyframes rise { from { transform: translateY(14px); opacity: 0; } }
+.sp-title {
+  margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400;
+  font-size: clamp(72px, 15vw, 180px); line-height: 0.84; letter-spacing: -0.02em;
+  display: flex; flex-wrap: wrap; justify-content: center;
+}
+.sp-letter {
+  display: inline-block; color: #f3ead9; text-shadow: 0 0 60px rgba(232,192,106,.18);
+  animation: fw-rise 0.95s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.sp-letter.accent { color: #e8c06a; }
+.sp-space { display: inline-block; width: 0.18em; }
+.sp-caret {
+  display: inline-block; align-self: flex-end; width: 12px; height: 12px;
+  border-radius: 50%; background: #e8c06a; margin-bottom: 0.16em;
+  animation: fw-caret 1.6s steps(1, end) 1.2s infinite;
+}
+.sp-tag {
+  margin: 0; font-size: clamp(16px, 1.5vw, 21px); line-height: 1.5;
+  color: rgba(243,234,217,.72); text-align: center; max-width: 30ch;
+  text-wrap: pretty; animation: fw-fade 1s ease 0.75s both;
+}
+.sp-tag em {
+  font-family: 'Instrument Serif', Georgia, serif; font-style: italic;
+  font-size: 1.18em; color: #f3ead9;
+}
+.sp-chords {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 8px; animation: fw-fade 1s ease 0.9s both;
+}
+.sp-chip {
+  min-width: 74px; padding: 10px 14px 11px; border-radius: 12px; cursor: pointer;
+  text-align: center; border: 1px solid rgba(243,234,217,.14);
+  background: rgba(243,234,217,.04); box-shadow: none; color: inherit;
+  display: inline-flex; flex-direction: column; align-items: center; gap: 5px;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.3s ease, border-color 0.3s ease;
+}
+.sp-chip:hover { transform: translateY(-3px); }
+.sp-chip.on {
+  border-color: #e8c06a; background: rgba(232,192,106,.14);
+  box-shadow: 0 10px 30px -14px #e8c06a;
+}
+.sp-chip .nm { font-family: 'Instrument Serif', Georgia, serif; font-size: 24px; line-height: 1; color: rgba(243,234,217,.72); }
+.sp-chip.on .nm { color: #f6dda3; }
+.sp-chip .nt { font-family: 'DM Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 0.16em; color: rgba(243,234,217,.34); }
+.sp-chip.on .nt { color: rgba(246,221,163,.7); }
+.sp-chord-arrow { font-family: 'DM Mono', monospace; font-size: 12px; color: rgba(243,234,217,.3); }
+.sp-cta {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 14px; margin-top: 6px; animation: fw-fade 1s ease 1.05s both;
+}
+.sp-enter {
+  display: inline-flex; align-items: center; gap: 12px; padding: 17px 34px;
+  border: none; border-radius: 999px; cursor: pointer;
+  background: #e8c06a; color: #241a12;
+  font: 600 16px 'Albert Sans', sans-serif; letter-spacing: 0.01em;
+  box-shadow: 0 14px 40px -12px rgba(232,192,106,.45);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+}
+.sp-enter:hover { transform: translateY(-3px); box-shadow: 0 22px 52px -14px rgba(232,192,106,.7); }
+.sp-enter:focus-visible, .sp-strum:focus-visible, .sp-chip:focus-visible { outline: 2px solid #f3ead9; outline-offset: 3px; }
+.sp-arrow { font-family: 'DM Mono', monospace; font-size: 15px; }
+.sp-strum {
+  display: inline-flex; align-items: center; gap: 10px; padding: 16px 26px;
+  border-radius: 999px; cursor: pointer; background: none;
+  border: 1px solid rgba(243,234,217,.2); color: rgba(243,234,217,.8);
+  font: 400 15px 'Albert Sans', sans-serif;
+  transition: border-color 0.3s ease, color 0.3s ease, transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sp-strum:hover { border-color: rgba(243,234,217,.5); color: #f3ead9; transform: translateY(-3px); }
+.sp-dot { width: 7px; height: 7px; border-radius: 50%; background: #e8c06a; box-shadow: 0 0 12px rgba(232,192,106,.45); }
+.sp-foot {
+  position: absolute; bottom: 22px; display: flex; align-items: center; gap: 10px;
+  font-family: 'DM Mono', ui-monospace, monospace; font-size: 11px;
+  letter-spacing: 0.16em; color: rgba(243,234,217,.34);
+  animation: fw-fade 1.4s ease 1.3s both;
+}
+.sp-foot b { font-weight: 400; color: rgba(243,234,217,.6); }
+.sp-foot-l { left: 26px; }
+.sp-foot-r { right: 26px; gap: 14px; }
+.sp-sep { width: 1px; height: 11px; background: rgba(243,234,217,.2); }
+.sp-halo {
+  position: absolute; top: -140px; left: 50%; margin-left: -260px;
+  width: 520px; height: 320px; border-radius: 50%;
+  background: rgba(232,192,106,.45); filter: blur(90px);
+  pointer-events: none; animation: fw-halo 9s ease-in-out infinite;
+}
+@keyframes fw-rise { from { opacity: 0; transform: translateY(26px) rotate(-2deg); } to { opacity: 1; transform: none; } }
+@keyframes fw-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fw-halo { 0%, 100% { opacity: 0.32; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.06); } }
+@keyframes fw-caret { 0%, 45% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@media (max-width: 560px) {
+  .sp-foot { font-size: 10px; gap: 7px; }
+  .sp-foot-r { right: 14px; } .sp-foot-l { left: 14px; }
+}
 
 /* ---------- responsive ---------- */
 @media (max-width: 640px) {
@@ -349,22 +446,23 @@ g.note.clickable { cursor: pointer; }
 </style>
 <div id="app">
 <div id="splash">
-  <div class="splash-strings" aria-hidden="true">
-    <span style="top:14%;height:1px;animation-delay:.05s"></span>
-    <span style="top:27%;height:1.3px;animation-delay:.14s"></span>
-    <span style="top:40%;height:1.7px;animation-delay:.23s"></span>
-    <span style="top:60%;height:2.1px;animation-delay:.32s"></span>
-    <span style="top:73%;height:2.5px;animation-delay:.41s"></span>
-    <span style="top:86%;height:3px;animation-delay:.5s"></span>
-    <i style="left:11%;top:49%"></i><i style="left:87%;top:49%"></i>
-    <i style="left:30%;top:11%"></i><i style="left:68%;top:88%"></i>
+  <div class="sp-frets" aria-hidden="true"></div>
+  <div class="sp-markers" aria-hidden="true"></div>
+  <div class="sp-strings"></div>
+  <div class="sp-vignette" aria-hidden="true"></div>
+  <div class="sp-center">
+    <div class="sp-eyebrow"><i></i><span>Harmony · Modes · Improvisation</span><i></i></div>
+    <h1 class="sp-title" id="sp-title"></h1>
+    <p class="sp-tag">Build a progression. Light up the neck. <em>Understand why.</em></p>
+    <div class="sp-chords" id="sp-chords"></div>
+    <div class="sp-cta">
+      <button id="enter-btn" class="sp-enter">Enter the fretboard <span class="sp-arrow">→</span></button>
+      <button id="strum-btn" class="sp-strum" type="button"><span class="sp-dot"></span><span id="strum-label">Hear it — strum</span></button>
+    </div>
   </div>
-  <div class="splash-card">
-    <p class="splash-eyebrow">harmony · modes · improvisation</p>
-    <h1 class="splash-title">Fretwork</h1>
-    <p class="splash-tag">Build a progression. Light up the neck. Understand why.</p>
-    <button id="enter-btn" class="splash-enter">Enter</button>
-  </div>
+  <div class="sp-foot sp-foot-l">TUNING <b>E A D G B E</b></div>
+  <div class="sp-foot sp-foot-r"><span>PLUCK A STRING ↑</span><span class="sp-sep"></span><span>DEVELOPED BY <b>JULIO DIAZ</b></span></div>
+  <div class="sp-halo" aria-hidden="true"></div>
 </div>
 <header class="top">
   <div class="brand">
@@ -1812,15 +1910,157 @@ function applyTheme() {
 }
 
 /* ================= Init ================= */
+/* Splash: ported from the user's Claude Design canvas. Pluckable
+   glowing strings, cycling chord chips, strum, Enter → Studio. */
 function wireSplash() {
   const splash = $('#splash');
-  const enter = $('#enter-btn');
-  if (!splash || !enter) return;
-  enter.addEventListener('click', () => {
+  if (!splash) return;
+  const FREQS = [329.63, 246.94, 196.0, 146.83, 110.0, 82.41];
+  const NAMES = ['e', 'B', 'G', 'D', 'A', 'E'];
+  const amps = [0, 0, 0, 0, 0, 0];
+  let raf = null, cycle = null;
+
+  // Fret lines + inlay markers
+  const N = 13;
+  const fretsBox = splash.querySelector('.sp-frets');
+  for (let i = 1; i <= N; i++) {
+    const d = document.createElement('div');
+    d.className = 'sp-fret';
+    d.style.left = (i * 100) / (N + 1) + '%';
+    fretsBox.appendChild(d);
+  }
+  const mBox = splash.querySelector('.sp-markers');
+  const marks = [3, 5, 7, 9].map((n) => [((n + 0.5) * 100) / (N + 1), 'calc(50% - 5px)']);
+  marks.push([(12.5 * 100) / (N + 1), 'calc(33.3% - 5px)']);
+  for (const [pct, top] of marks) {
+    const d = document.createElement('div');
+    d.className = 'sp-marker';
+    d.style.left = `calc(${pct}% - 5px)`;
+    d.style.top = top;
+    mBox.appendChild(d);
+  }
+
+  // Strings
+  const sBox = splash.querySelector('.sp-strings');
+  const glows = [];
+  for (let i = 0; i < 6; i++) {
+    const row = document.createElement('div');
+    row.className = 'sp-string';
+    row.style.height = 100 / 6 + '%';
+    row.style.top = (i * 100) / 6 + '%';
+    row.setAttribute('role', 'button');
+    row.setAttribute('aria-label', 'Pluck ' + NAMES[i] + ' string');
+    row.innerHTML = `<div class="sp-line"><div class="sp-line-base" style="transform:scaleY(${(1 + (5 - i) * 0.55).toFixed(2)})"></div><div class="sp-line-glow"></div></div><span class="sp-string-label">${NAMES[i]}</span>`;
+    row.addEventListener('click', () => pluck(i, 1));
+    sBox.appendChild(row);
+    glows.push(row.querySelector('.sp-line-glow'));
+  }
+  function paint() {
+    amps.forEach((a, i) => {
+      glows[i].style.opacity = a.toFixed(3);
+      glows[i].style.transform = `scaleY(${(1 + a * 2.6).toFixed(2)})`;
+    });
+  }
+  function decay() {
+    cancelAnimationFrame(raf);
+    const step = () => {
+      let alive = false;
+      for (let i = 0; i < 6; i++) {
+        amps[i] = amps[i] > 0.004 ? amps[i] * 0.94 : 0;
+        if (amps[i] > 0) alive = true;
+      }
+      paint();
+      if (alive) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+  }
+  function hit(i, level) { amps[i] = Math.min(1, level == null ? 1 : level); paint(); decay(); }
+  function pluckAudio(i, level) {
+    try {
+      const ctx = Audio_.get();
+      const t = ctx.currentTime;
+      const f = FREQS[i];
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.16 * (level || 1), t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(2600, t);
+      lp.frequency.exponentialRampToValueAtTime(700, t + 1.6);
+      [[1, 1], [2, 0.32], [3, 0.14]].forEach(([mult, amp]) => {
+        const o = ctx.createOscillator();
+        o.type = mult === 1 ? 'triangle' : 'sine';
+        o.frequency.value = f * mult;
+        const og = ctx.createGain();
+        og.gain.value = amp;
+        o.connect(og).connect(lp);
+        o.start(t);
+        o.stop(t + 2.3);
+      });
+      lp.connect(g).connect(Audio_.master);
+    } catch (e) { /* audio optional */ }
+  }
+  function pluck(i, level) { hit(i, level); pluckAudio(i, level); }
+  function strum() {
+    [5, 4, 3, 2, 1, 0].forEach((i, k) => setTimeout(() => pluck(i, 0.9 - k * 0.06), k * 68));
+    $('#strum-label').textContent = 'Strum again';
+  }
+
+  // Title letters
+  const titleBox = $('#sp-title');
+  'Fretwork'.split('').forEach((ch, i) => {
+    const s = document.createElement('span');
+    s.className = 'sp-letter' + (i === 0 ? ' accent' : '');
+    s.textContent = ch;
+    s.style.animationDelay = 0.18 + i * 0.065 + 's';
+    titleBox.appendChild(s);
+  });
+  titleBox.insertAdjacentHTML('beforeend', '<span class="sp-space"></span><span class="sp-caret"></span>');
+
+  // Chord chips
+  const CHORDS = [
+    { name: 'Dm7', notes: 'D F A C', strings: [3, 2, 1, 0] },
+    { name: 'G7', notes: 'G B D F', strings: [4, 3, 2, 1] },
+    { name: 'Cmaj7', notes: 'C E G B', strings: [4, 3, 2, 0] },
+  ];
+  const chipsBox = $('#sp-chords');
+  const chipEls = [];
+  let active = 2;
+  const setActive = (i) => {
+    active = i;
+    chipEls.forEach((el, k) => el.classList.toggle('on', k === i));
+  };
+  CHORDS.forEach((c, i) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'sp-chip';
+    chip.innerHTML = `<span class="nm">${c.name}</span><span class="nt">${c.notes}</span>`;
+    chip.addEventListener('click', () => {
+      setActive(i);
+      c.strings.forEach((s, k) => setTimeout(() => pluck(s, 0.85), k * 80));
+    });
+    chipsBox.appendChild(chip);
+    chipEls.push(chip);
+    if (i < CHORDS.length - 1)
+      chipsBox.insertAdjacentHTML('beforeend', '<span class="sp-chord-arrow">→</span>');
+  });
+  setActive(2);
+  cycle = setInterval(() => setActive((active + 1) % 3), 2200);
+
+  // Ambient intro: silent visual plucks after load
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+    [1, 3, 5].forEach((i, k) => setTimeout(() => hit(i, 0.55), 1400 + k * 260));
+
+  $('#strum-btn').addEventListener('click', strum);
+  $('#enter-btn').addEventListener('click', () => {
+    strum(); // the click gesture unlocks audio; ride the strum in
     splash.classList.add('gone');
-    setTimeout(() => splash.remove(), 800);
-    // The click is our user gesture: unlock audio and strum us in.
-    try { Audio_.playChord(state.chords[0], 0, 2.0); } catch (e) { /* audio optional */ }
+    setTimeout(() => {
+      clearInterval(cycle);
+      cancelAnimationFrame(raf);
+      splash.remove();
+    }, 800);
   });
 }
 

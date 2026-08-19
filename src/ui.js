@@ -534,15 +534,157 @@ function applyTheme() {
 }
 
 /* ================= Init ================= */
+/* Splash: ported from the user's Claude Design canvas. Pluckable
+   glowing strings, cycling chord chips, strum, Enter → Studio. */
 function wireSplash() {
   const splash = $('#splash');
-  const enter = $('#enter-btn');
-  if (!splash || !enter) return;
-  enter.addEventListener('click', () => {
+  if (!splash) return;
+  const FREQS = [329.63, 246.94, 196.0, 146.83, 110.0, 82.41];
+  const NAMES = ['e', 'B', 'G', 'D', 'A', 'E'];
+  const amps = [0, 0, 0, 0, 0, 0];
+  let raf = null, cycle = null;
+
+  // Fret lines + inlay markers
+  const N = 13;
+  const fretsBox = splash.querySelector('.sp-frets');
+  for (let i = 1; i <= N; i++) {
+    const d = document.createElement('div');
+    d.className = 'sp-fret';
+    d.style.left = (i * 100) / (N + 1) + '%';
+    fretsBox.appendChild(d);
+  }
+  const mBox = splash.querySelector('.sp-markers');
+  const marks = [3, 5, 7, 9].map((n) => [((n + 0.5) * 100) / (N + 1), 'calc(50% - 5px)']);
+  marks.push([(12.5 * 100) / (N + 1), 'calc(33.3% - 5px)']);
+  for (const [pct, top] of marks) {
+    const d = document.createElement('div');
+    d.className = 'sp-marker';
+    d.style.left = `calc(${pct}% - 5px)`;
+    d.style.top = top;
+    mBox.appendChild(d);
+  }
+
+  // Strings
+  const sBox = splash.querySelector('.sp-strings');
+  const glows = [];
+  for (let i = 0; i < 6; i++) {
+    const row = document.createElement('div');
+    row.className = 'sp-string';
+    row.style.height = 100 / 6 + '%';
+    row.style.top = (i * 100) / 6 + '%';
+    row.setAttribute('role', 'button');
+    row.setAttribute('aria-label', 'Pluck ' + NAMES[i] + ' string');
+    row.innerHTML = `<div class="sp-line"><div class="sp-line-base" style="transform:scaleY(${(1 + (5 - i) * 0.55).toFixed(2)})"></div><div class="sp-line-glow"></div></div><span class="sp-string-label">${NAMES[i]}</span>`;
+    row.addEventListener('click', () => pluck(i, 1));
+    sBox.appendChild(row);
+    glows.push(row.querySelector('.sp-line-glow'));
+  }
+  function paint() {
+    amps.forEach((a, i) => {
+      glows[i].style.opacity = a.toFixed(3);
+      glows[i].style.transform = `scaleY(${(1 + a * 2.6).toFixed(2)})`;
+    });
+  }
+  function decay() {
+    cancelAnimationFrame(raf);
+    const step = () => {
+      let alive = false;
+      for (let i = 0; i < 6; i++) {
+        amps[i] = amps[i] > 0.004 ? amps[i] * 0.94 : 0;
+        if (amps[i] > 0) alive = true;
+      }
+      paint();
+      if (alive) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+  }
+  function hit(i, level) { amps[i] = Math.min(1, level == null ? 1 : level); paint(); decay(); }
+  function pluckAudio(i, level) {
+    try {
+      const ctx = Audio_.get();
+      const t = ctx.currentTime;
+      const f = FREQS[i];
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.16 * (level || 1), t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(2600, t);
+      lp.frequency.exponentialRampToValueAtTime(700, t + 1.6);
+      [[1, 1], [2, 0.32], [3, 0.14]].forEach(([mult, amp]) => {
+        const o = ctx.createOscillator();
+        o.type = mult === 1 ? 'triangle' : 'sine';
+        o.frequency.value = f * mult;
+        const og = ctx.createGain();
+        og.gain.value = amp;
+        o.connect(og).connect(lp);
+        o.start(t);
+        o.stop(t + 2.3);
+      });
+      lp.connect(g).connect(Audio_.master);
+    } catch (e) { /* audio optional */ }
+  }
+  function pluck(i, level) { hit(i, level); pluckAudio(i, level); }
+  function strum() {
+    [5, 4, 3, 2, 1, 0].forEach((i, k) => setTimeout(() => pluck(i, 0.9 - k * 0.06), k * 68));
+    $('#strum-label').textContent = 'Strum again';
+  }
+
+  // Title letters
+  const titleBox = $('#sp-title');
+  'Fretwork'.split('').forEach((ch, i) => {
+    const s = document.createElement('span');
+    s.className = 'sp-letter' + (i === 0 ? ' accent' : '');
+    s.textContent = ch;
+    s.style.animationDelay = 0.18 + i * 0.065 + 's';
+    titleBox.appendChild(s);
+  });
+  titleBox.insertAdjacentHTML('beforeend', '<span class="sp-space"></span><span class="sp-caret"></span>');
+
+  // Chord chips
+  const CHORDS = [
+    { name: 'Dm7', notes: 'D F A C', strings: [3, 2, 1, 0] },
+    { name: 'G7', notes: 'G B D F', strings: [4, 3, 2, 1] },
+    { name: 'Cmaj7', notes: 'C E G B', strings: [4, 3, 2, 0] },
+  ];
+  const chipsBox = $('#sp-chords');
+  const chipEls = [];
+  let active = 2;
+  const setActive = (i) => {
+    active = i;
+    chipEls.forEach((el, k) => el.classList.toggle('on', k === i));
+  };
+  CHORDS.forEach((c, i) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'sp-chip';
+    chip.innerHTML = `<span class="nm">${c.name}</span><span class="nt">${c.notes}</span>`;
+    chip.addEventListener('click', () => {
+      setActive(i);
+      c.strings.forEach((s, k) => setTimeout(() => pluck(s, 0.85), k * 80));
+    });
+    chipsBox.appendChild(chip);
+    chipEls.push(chip);
+    if (i < CHORDS.length - 1)
+      chipsBox.insertAdjacentHTML('beforeend', '<span class="sp-chord-arrow">→</span>');
+  });
+  setActive(2);
+  cycle = setInterval(() => setActive((active + 1) % 3), 2200);
+
+  // Ambient intro: silent visual plucks after load
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+    [1, 3, 5].forEach((i, k) => setTimeout(() => hit(i, 0.55), 1400 + k * 260));
+
+  $('#strum-btn').addEventListener('click', strum);
+  $('#enter-btn').addEventListener('click', () => {
+    strum(); // the click gesture unlocks audio; ride the strum in
     splash.classList.add('gone');
-    setTimeout(() => splash.remove(), 800);
-    // The click is our user gesture: unlock audio and strum us in.
-    try { Audio_.playChord(state.chords[0], 0, 2.0); } catch (e) { /* audio optional */ }
+    setTimeout(() => {
+      clearInterval(cycle);
+      cancelAnimationFrame(raf);
+      splash.remove();
+    }, 800);
   });
 }
 

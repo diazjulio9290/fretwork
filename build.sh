@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 OUT=app.html
 {
   echo '<title>Fretwork</title>'
-  echo '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Albert+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;600&display=swap">'
+  echo '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&family=Albert+Sans:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;600&display=swap">'
   echo '<style>'
   cat src/styles.css
   echo '</style>'
