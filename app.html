@@ -166,11 +166,12 @@ button:focus-visible, select:focus-visible, input:focus-visible, [data-action]:f
 .chord-sym:hover { color: var(--accent); }
 .chord-notes { color: var(--muted); font-size: 11px; margin-top: 2px; }
 .chord-remove {
-  position: absolute; top: 4px; right: 6px;
+  position: absolute; top: 0; right: 0;
   border: none; background: none; color: var(--muted);
-  font-size: 15px; cursor: pointer; padding: 0 4px; border-radius: 4px;
+  font-size: 15px; cursor: pointer; border-radius: 10px;
+  width: 28px; height: 28px; line-height: 28px; text-align: center; padding: 0;
 }
-.chord-remove:hover { color: var(--avoid); }
+.chord-remove:hover { color: var(--avoid); background: var(--accent-soft); }
 .chord-remove:disabled { opacity: 0.25; cursor: default; }
 .add-chip {
   flex: 0 0 auto; align-self: center; width: 40px; height: 40px;
@@ -1511,11 +1512,14 @@ function renderProgression() {
     return `<div class="chord-card ${i === state.focus ? 'focused' : ''}" data-action="focus-chord" data-idx="${i}">
       <div class="chord-sym" data-action="play-chord" data-idx="${i}" title="Play chord">${esc(chordSymbol(c))}</div>
       <div class="chord-notes mono">${spelled.notes.join(' ')}</div>
-      <button class="chord-remove" data-action="remove-chord" data-idx="${i}" ${state.chords.length <= 2 ? 'disabled' : ''} aria-label="Remove chord">×</button>
+      <button class="chord-remove" data-action="remove-chord" data-idx="${i}"
+        ${state.chords.length <= 1 ? 'disabled' : ''}
+        title="${state.chords.length <= 1 ? 'Keep at least one chord' : 'Remove ' + esc(chordSymbol(c))}"
+        aria-label="Remove chord">×</button>
     </div>`;
   }).join('<div class="chord-arrow">→</div>')
-  + `<button class="add-chip" data-action="add-chord" ${state.chords.length >= 12 ? 'disabled' : ''} aria-label="Add chord">＋</button>`;
-  $('#prog-count').textContent = state.chords.length + ' chords · 2–12';
+  + `<button class="add-chip" data-action="add-chord" ${state.chords.length >= 12 ? 'disabled' : ''} aria-label="Add chord" title="Add chord">＋</button>`;
+  $('#prog-count').textContent = state.chords.length + (state.chords.length === 1 ? ' chord (vamp) · 1–12' : ' chords · 1–12');
   renderChordEditor();
 }
 
@@ -1563,12 +1567,14 @@ function renderAnswer() {
   if (families.length) {
     const fam = families[0];
     const parentName = spellScale(fam.parentRoot, fam.fam.parent).rootName;
-    let reason = `<b>${esc(parentName)} ${fam.fam.label}</b> — all ${n} chords live here.`;
     const first = state.chords[0];
+    let reason = n === 1
+      ? `<b>${esc(parentName)} ${fam.fam.label}</b> — the ${esc(chordSymbol(first))} sits entirely inside it.`
+      : `<b>${esc(parentName)} ${fam.fam.label}</b> — all ${n} chords live here.`;
     const m = fam.modes.find((mm) => mm.root === first.root && mm.key !== fam.fam.parent);
     if (m) reason += ` Start on ${esc(spellScale(m.root, m.key).rootName)} for ${esc(SCALES[m.key].name)} color over the ${esc(chordSymbol(first))}.`;
     card.innerHTML = `<div class="answer">
-      <div class="answer-status mono">fits all ${n} chords</div>
+      <div class="answer-status mono">${n === 1 ? 'fits the vamp' : 'fits all ' + n + ' chords'}</div>
       <p class="answer-reason">${reason}</p>
       <div class="chip-row">${fam.modes.map((mm) => chipFor(mm.root, mm.key)).join('')}</div>
     </div>`;
@@ -1992,7 +1998,7 @@ function wireEvents() {
     }
     else if (a === 'remove-chord') {
       ev.stopPropagation();
-      if (state.chords.length > 2) {
+      if (state.chords.length > 1) {
         state.chords.splice(+el.dataset.idx, 1);
         state.focus = Math.min(state.focus, state.chords.length - 1);
         render();
