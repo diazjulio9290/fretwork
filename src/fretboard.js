@@ -22,11 +22,23 @@ function pieSlice(cx, cy, r, a0, a1) {
   return `M${cx},${cy} L${x0.toFixed(2)},${y0.toFixed(2)} A${r},${r} 0 ${large} 1 ${x1.toFixed(2)},${y1.toFixed(2)} Z`;
 }
 
+// Semantic note-function color: root / chord tone / scale tone /
+// tension / avoid, judged against the focused chord (design critique §4).
+function fnColor(pc, chord) {
+  const cls = classifyNote(pc, chord);
+  if (mod12(pc - chord.root) === 0) return { fill: 'var(--fn-root)', text: '#fdf6ea' };
+  if (cls.role === 'chord') return { fill: 'var(--fn-chord)', text: '#241a0c' };
+  if (cls.role === 'avoid') return { fill: 'var(--fn-avoid)', text: '#241a0c' };
+  if (['♭9', '♯9', '♯11', '♭13'].includes(cls.name)) return { fill: 'var(--fn-tension)', text: '#f4effc' };
+  return { fill: 'var(--fn-scale)', text: '#eef7f3' };
+}
+
 function renderFretboard(opts) {
   const {
     frets = 24, compact = false, scales = [], labelMode = 'names',
     emphasizeRoots = true, window: win = null, customSet = null,
-    filterSet = null, focusPcs = null, interactive = true, idPrefix = 'fb',
+    filterSet = null, focusPcs = null, focusChord = null,
+    interactive = true, idPrefix = 'fb',
   } = opts;
 
   const rowH = compact ? 20 : 27;
@@ -129,8 +141,10 @@ function renderFretboard(opts) {
 
       let g = `<g class="note${interactive ? ' clickable' : ''}" data-s="${st}" data-f="${f}" data-pc="${pc}" opacity="${opacity}">`;
 
+      let textFill = '#fdf9f0';
       if (isCustom && !mem.length) {
         g += `<circle cx="${x}" cy="${y}" r="${r}" fill="var(--surface2)" stroke="var(--accent)" stroke-width="2" stroke-dasharray="3 2.4"/>`;
+        textFill = 'var(--ink)';
       } else if (multi && mem.length > 1) {
         const k = mem.length;
         mem.forEach((m, i) => {
@@ -141,9 +155,13 @@ function renderFretboard(opts) {
         g += `<circle cx="${x}" cy="${y}" r="${rr}" fill="none" stroke="#1d140c" stroke-width="1" opacity="0.5"/>`;
       } else {
         const m = mem[0];
-        const fill = multi
-          ? `var(--sc${m.scaleIdx})`
-          : `var(--deg${degreeNumber(m.degree)})`;
+        let fill;
+        if (multi) fill = `var(--sc${m.scaleIdx})`;
+        else if (focusChord) {
+          const fn = fnColor(pc, focusChord);
+          fill = fn.fill;
+          textFill = fn.text;
+        } else fill = `var(--deg${degreeNumber(m.degree)})`;
         g += `<circle cx="${x}" cy="${y}" r="${rr}" fill="${fill}" stroke="#1d140c" stroke-width="1" ${isCustom ? 'stroke-dasharray="3 2.4"' : ''}/>`;
       }
 
@@ -160,7 +178,7 @@ function renderFretboard(opts) {
       else if (labelMode === 'degrees' && m0) label = String(degreeNumber(m0.degree));
       if (isCustom && !mem.length) label = labelMode === 'none' ? '' : PC_PREFERRED[pc];
       if (label)
-        g += `<text x="${x}" y="${y + (compact ? 2.6 : 3.4)}" font-size="${compact ? 7.5 : (label.length > 2 ? 8 : 9.5)}" fill="#fdf9f0" text-anchor="middle" font-weight="600">${label}</text>`;
+        g += `<text x="${x}" y="${y + (compact ? 2.6 : 3.4)}" font-size="${compact ? 7.5 : (label.length > 2 ? 8 : 9.5)}" fill="${textFill}" text-anchor="middle" font-weight="600">${label}</text>`;
       g += '</g>';
       s += g;
     }

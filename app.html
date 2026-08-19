@@ -22,18 +22,26 @@
   --deg1: #c13e2e; --deg2: #56789e; --deg3: #bd8524; --deg4: #96598f;
   --deg5: #2c8977; --deg6: #79883a; --deg7: #675cb0;
   --sc0: #bf5636; --sc1: #3c7c9d; --sc2: #6c8933; --sc3: #855aa8;
+  /* Semantic note-function hues (design critique §4). Same in both
+     themes — they live mostly on the always-dark neck. Never used
+     for UI chrome. */
+  --fn-root: #c8541f;
+  --fn-chord: #cf9a1e;
+  --fn-scale: #3f8f74;
+  --fn-tension: #6c5b9e;
+  --fn-avoid: #b3a894;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #1e1812;
-    --surface: #292117;
-    --surface2: #352b1d;
-    --border: #493b26;
-    --ink: #efe7d4;
-    --muted: #a89a7e;
-    --accent: #d9a84e;
-    --accent-ink: #241a0c;
-    --accent-soft: #d9a84e2b;
+    --bg: #150f0b;
+    --surface: #241a13;
+    --surface2: #2e2115;
+    --border: #43321f;
+    --ink: #f3ead9;
+    --muted: #a3937a;
+    --accent: #e8c06a;
+    --accent-ink: #241a12;
+    --accent-soft: #e8c06a2b;
     --avoid: #e06552;
     --ring: #efe3c4;
     --deg1: #e4614c; --deg2: #7aa2ca; --deg3: #dfa63f; --deg4: #c07eb8;
@@ -42,15 +50,15 @@
   }
 }
 :root[data-theme="dark"] {
-  --bg: #1e1812;
-  --surface: #292117;
-  --surface2: #352b1d;
-  --border: #493b26;
-  --ink: #efe7d4;
-  --muted: #a89a7e;
-  --accent: #d9a84e;
-  --accent-ink: #241a0c;
-  --accent-soft: #d9a84e2b;
+  --bg: #150f0b;
+  --surface: #241a13;
+  --surface2: #2e2115;
+  --border: #43321f;
+  --ink: #f3ead9;
+  --muted: #a3937a;
+  --accent: #e8c06a;
+  --accent-ink: #241a12;
+  --accent-soft: #e8c06a2b;
   --avoid: #e06552;
   --ring: #efe3c4;
   --deg1: #e4614c; --deg2: #7aa2ca; --deg3: #dfa63f; --deg4: #c07eb8;
@@ -124,51 +132,85 @@ button:focus-visible, select:focus-visible, input:focus-visible, [data-action]:f
   outline: 2px solid var(--accent); outline-offset: 2px;
 }
 
-/* ---------- progression rail ---------- */
+/* ---------- studio spine ---------- */
+.studio-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px 40px; }
+@media (min-width: 1100px) {
+  .studio-grid { grid-template-columns: minmax(0, 1fr) 360px; }
+  .studio-rail { border-left: 1px solid var(--border); padding-left: 28px; }
+}
+.sec { margin-bottom: 38px; }
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.sec-title {
+  font-family: 'Instrument Serif', Georgia, serif; font-weight: 400;
+  font-size: 30px; margin: 0 0 14px;
+}
+.rail-title { font-size: 21px; color: var(--muted); margin-bottom: 4px; }
+
+/* ---------- progression rail (compact bar) ---------- */
 .prog-rail {
   display: flex; align-items: stretch; gap: 8px;
   overflow-x: auto; padding: 4px 2px 10px;
 }
-.chord-arrow { align-self: center; color: var(--muted); font-size: 18px; }
+.chord-arrow { align-self: center; color: var(--muted); font-size: 16px; }
 .chord-card {
-  position: relative; min-width: 138px; flex: 0 0 auto;
+  position: relative; min-width: 106px; flex: 0 0 auto;
   background: var(--surface2); border: 1.5px solid var(--border);
-  border-radius: 10px; padding: 10px 12px 12px; cursor: pointer;
+  border-radius: 10px; padding: 8px 26px 9px 12px; cursor: pointer;
   transition: border-color 0.15s, transform 0.15s;
 }
 .chord-card.focused { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .chord-sym {
   font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 30px; line-height: 1.1; cursor: pointer;
+  font-size: 26px; line-height: 1.1; cursor: pointer;
 }
 .chord-sym:hover { color: var(--accent); }
-.chord-notes { color: var(--muted); font-size: 11.5px; margin: 2px 0 8px; }
-.chord-selects { display: grid; gap: 5px; }
-.chord-selects select {
-  width: 100%; padding: 4px 6px; border-radius: 6px;
-  border: 1px solid var(--border); background: var(--surface); color: var(--ink);
-  font-size: 12px;
-}
+.chord-notes { color: var(--muted); font-size: 11px; margin-top: 2px; }
 .chord-remove {
-  position: absolute; top: 6px; right: 8px;
+  position: absolute; top: 4px; right: 6px;
   border: none; background: none; color: var(--muted);
-  font-size: 16px; cursor: pointer; padding: 0 4px; border-radius: 4px;
+  font-size: 15px; cursor: pointer; padding: 0 4px; border-radius: 4px;
 }
 .chord-remove:hover { color: var(--avoid); }
 .chord-remove:disabled { opacity: 0.25; cursor: default; }
-
-/* ---------- suggestions ---------- */
-.fam-card {
-  border: 1px solid var(--border); border-radius: 10px;
-  padding: 12px 14px; margin-bottom: 10px; background: var(--surface2);
+.add-chip {
+  flex: 0 0 auto; align-self: center; width: 40px; height: 40px;
+  border-radius: 50%; border: 1px dashed var(--border); background: none;
+  color: var(--muted); font-size: 17px; cursor: pointer;
 }
-.fam-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.add-chip:hover { border-color: var(--accent); color: var(--accent); }
+.add-chip:disabled { opacity: 0.3; cursor: default; }
+
+/* ---------- chord editor (tap targets, no dropdowns) ---------- */
+.editor { margin-top: 10px; display: grid; gap: 8px; }
+.ed-label { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.ed-row { display: flex; flex-wrap: wrap; gap: 5px; }
+.ed-types { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-color: var(--border) transparent; scrollbar-width: thin; }
+.ed-btn {
+  flex: 0 0 auto; border: 1px solid var(--border); background: var(--surface2);
+  color: var(--ink); border-radius: 7px; padding: 5px 10px; cursor: pointer;
+  font: 500 12.5px 'Spline Sans Mono', ui-monospace, monospace;
+}
+.ed-btn:hover { border-color: var(--accent); }
+.ed-btn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+/* ---------- the answer (three tiers) ---------- */
 .badge {
   font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
   padding: 2px 9px; border-radius: 999px;
   background: var(--accent-soft); color: var(--accent);
   border: 1px solid var(--accent);
 }
+.answer { border-left: 3px solid var(--accent); padding: 4px 0 6px 18px; margin: 0 0 20px; }
+.answer-status {
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px;
+}
+.answer-reason {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 23px; line-height: 1.35; margin: 0 0 14px;
+  max-width: 34ch; text-wrap: pretty;
+}
+.answer-reason b { font-weight: 400; color: var(--accent); }
 .chip-row { display: flex; flex-wrap: wrap; gap: 7px; }
 .chip {
   border: 1px solid var(--border); background: var(--surface); color: var(--ink);
@@ -178,12 +220,16 @@ button:focus-visible, select:focus-visible, input:focus-visible, [data-action]:f
 .chip small { color: var(--muted); font-weight: 400; }
 .chip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .chip.on small { color: var(--accent-ink); opacity: 0.75; }
-.near { margin: 6px 0 14px; }
-.near summary { cursor: pointer; color: var(--muted); font-size: 13.5px; padding: 4px 0; }
-.near > div { padding-top: 8px; }
-#sugg-perchord h3, #selected-scales h3 {
+/* fill bar behind a chip: length encodes fit (critique §2) */
+.chip.bar.gold { background: linear-gradient(to right, rgba(232,192,106,.18) var(--fill), transparent var(--fill)); }
+.chip.bar.dull { background: linear-gradient(to right, rgba(179,168,148,.15) var(--fill), transparent var(--fill)); color: var(--muted); }
+.chip.bar.on { background: var(--accent); color: var(--accent-ink); }
+.more { margin: 16px 0; }
+.more summary { cursor: pointer; color: var(--muted); font-size: 13.5px; padding: 4px 0; }
+.more > div { padding-top: 10px; }
+#alt-row h3, #selected-scales h3, #perchord-block h3 {
   font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--muted); margin: 16px 0 8px;
+  color: var(--muted); margin: 18px 0 8px;
 }
 .perchord-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 7px; flex-wrap: wrap; }
 .pc-label { min-width: 72px; font-weight: 600; }
@@ -201,22 +247,15 @@ button:focus-visible, select:focus-visible, input:focus-visible, [data-action]:f
 }
 .swatch.ring { background: none; border: 2px dashed var(--muted); }
 
-/* ---------- theory panel ---------- */
-.theory-grid {
-  display: grid; gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
-}
-.tcard {
-  border: 1px solid var(--border); border-radius: 10px;
-  background: var(--surface2); padding: 14px 16px;
-}
-.tcard.wide { grid-column: 1 / -1; }
+/* ---------- reference rail (chrome-less theory) ---------- */
+.theory-stack { display: block; }
+.tcard { border-top: 1px solid var(--border); padding: 16px 0 8px; }
 .tcard h3 {
   margin: 0 0 6px; font-size: 12px; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent);
 }
 .tcard ul { margin: 8px 0 0; padding-left: 18px; }
-.tcard li { margin-bottom: 6px; }
+.tcard li { margin-bottom: 6px; font-size: 13.5px; }
 .tcard p { margin: 6px 0; }
 .theory-sub { margin-bottom: 10px; }
 .theory-sub p { margin: 3px 0; }
@@ -227,16 +266,33 @@ button:focus-visible, select:focus-visible, input:focus-visible, [data-action]:f
   font-family: 'Spline Sans Mono', monospace;
 }
 .nchip small { font-weight: 400; color: inherit; opacity: 0.75; }
-.nchip.chord { background: var(--accent); color: var(--accent-ink); }
-.nchip.tension { border: 1.5px dashed var(--border); color: var(--ink); }
-.nchip.avoid { border: 1.5px solid var(--avoid); color: var(--avoid); text-decoration: line-through; }
+.nchip.root { background: var(--fn-root); color: #fdf6ea; }
+.nchip.chord { background: var(--fn-chord); color: #241a0c; }
+.nchip.tension { border: 1.5px solid var(--fn-tension); color: var(--ink); }
+.nchip.avoid { border: 1.5px solid var(--fn-avoid); color: var(--muted); text-decoration: line-through; }
 .tab {
   background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
   padding: 10px 12px; overflow-x: auto; font-size: 12.5px; line-height: 1.5;
   margin: 8px 0;
 }
 
-/* ---------- fretboard ---------- */
+/* ---------- docked neck (critique §1: always visible) ---------- */
+#neck-dock {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  background: var(--surface); border-top: 1px solid var(--border);
+  box-shadow: 0 -14px 34px -20px rgba(0, 0, 0, 0.55);
+}
+.dock-bar, .dock-body { max-width: 1460px; margin: 0 auto; }
+.dock-bar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 8px 18px 4px; }
+.dock-toggle {
+  border: none; background: none; color: var(--ink); cursor: pointer;
+  font-family: 'Instrument Serif', Georgia, serif; font-size: 20px; padding: 2px 6px 2px 0;
+}
+#neck-dock .fret-controls { margin-left: auto; }
+.dock-body { padding: 0 18px 10px; }
+#neck-dock.collapsed .dock-body, #neck-dock.collapsed .fret-controls { display: none; }
+.dock-foot { display: flex; align-items: baseline; justify-content: space-between; gap: 10px 20px; flex-wrap: wrap; }
+
 .fret-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .ctl { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
 .ctl select {
@@ -246,16 +302,13 @@ button:focus-visible, select:focus-visible, input:focus-visible, [data-action]:f
 .chk { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; color: var(--muted); cursor: pointer; }
 .chk input { accent-color: var(--accent); }
 .pos-controls { display: inline-flex; align-items: center; gap: 8px; }
-.fret-scroll { overflow-x: auto; padding-bottom: 6px; }
+.fret-scroll { overflow-x: auto; padding-bottom: 4px; }
 #fret-wrap svg { min-width: 1080px; display: block; }
 #fret-wrap svg.fb-compact { min-width: 0; }
 g.note.clickable { cursor: pointer; }
-.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: 12.5px; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 6px; font-size: 12.5px; color: var(--muted); }
 .lg { display: inline-flex; align-items: center; gap: 6px; }
-.status {
-  margin-top: 8px; font-size: 12.5px; color: var(--muted);
-  border-top: 1px dashed var(--border); padding-top: 8px; min-height: 1.6em;
-}
+.status { margin-top: 6px; font-size: 12px; color: var(--muted); min-height: 1.5em; }
 
 /* ---------- library ---------- */
 #lib-search {
@@ -437,8 +490,12 @@ g.note.clickable { cursor: pointer; }
   .panel { padding: 13px 13px; }
   .wordmark { font-size: 27px; }
   .tagline { display: none; }
-  .chord-card { min-width: 120px; }
+  .chord-card { min-width: 96px; }
   .panel-head h2 { font-size: 21px; }
+  .sec-title { font-size: 24px; }
+  .answer-reason { font-size: 19px; }
+  .dock-bar { padding: 6px 12px 4px; }
+  .dock-body { padding: 0 12px 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
@@ -464,6 +521,7 @@ g.note.clickable { cursor: pointer; }
   <div class="sp-foot sp-foot-r"><span>PLUCK A STRING ↑</span><span class="sp-sep"></span><span>DEVELOPED BY <b>JULIO DIAZ</b></span></div>
   <div class="sp-halo" aria-hidden="true"></div>
 </div>
+
 <header class="top">
   <div class="brand">
     <span class="wordmark">Fretwork</span>
@@ -473,70 +531,39 @@ g.note.clickable { cursor: pointer; }
     <button class="tab-btn" data-action="tab" data-tab="studio">Studio</button>
     <button class="tab-btn" data-action="tab" data-tab="library">Library</button>
   </nav>
-  <button id="theme-btn" class="btn theme-btn" data-action="theme" title="Theme">◐ auto</button>
+  <button id="theme-btn" class="btn theme-btn" data-action="theme" title="Theme">● dark</button>
 </header>
 
 <main id="view-studio">
-  <section class="panel">
-    <div class="panel-head">
-      <h2>Progression</h2>
-      <div class="actions">
-        <span id="prog-count" class="muted small"></span>
-        <button class="btn" data-action="play-prog">▶ Play</button>
-        <button class="btn" id="add-chord" data-action="add-chord">＋ Add chord</button>
-      </div>
+  <div class="studio-grid">
+    <div class="studio-main">
+      <section class="sec">
+        <div class="sec-head">
+          <h2 class="sec-title">Progression</h2>
+          <div class="actions">
+            <span id="prog-count" class="muted small"></span>
+            <button class="btn" data-action="play-prog">▶ Play</button>
+          </div>
+        </div>
+        <div id="prog-rail" class="prog-rail"></div>
+        <div id="chord-editor"></div>
+      </section>
+
+      <section class="sec">
+        <h2 class="sec-title" id="answer-heading">The answer</h2>
+        <div id="answer-card"></div>
+        <div id="alt-row"></div>
+        <details id="more-scales" class="more"><summary></summary><div></div></details>
+        <div id="selected-scales"></div>
+      </section>
     </div>
-    <div id="prog-rail" class="prog-rail"></div>
-    <p class="muted small">Click a card to focus it (theory panels follow the focused chord) · click the big symbol to hear it · 2–12 chords.</p>
-  </section>
 
-  <section class="panel">
-    <div class="panel-head"><h2>Scales that fit</h2></div>
-    <div id="sugg-full"></div>
-    <details id="sugg-near" class="near"><summary>Near fits — one clashing chord</summary><div></div></details>
-    <div id="sugg-perchord"></div>
-    <div id="selected-scales"></div>
-  </section>
-
-  <section class="panel">
-    <div class="panel-head"><h2>Harmony &amp; theory</h2></div>
-    <div id="theory-panel" class="theory-grid"></div>
-  </section>
-
-  <section class="panel">
-    <div class="panel-head">
-      <h2>The neck</h2>
-      <div class="fret-controls">
-        <label class="ctl">Labels
-          <select id="label-mode">
-            <option value="names" selected>Note names</option>
-            <option value="intervals">Intervals (♭3, ♯4…)</option>
-            <option value="degrees">Degrees (1–7)</option>
-            <option value="none">None</option>
-          </select>
-        </label>
-        <label class="ctl">View
-          <select id="view-mode">
-            <option value="full" selected>Full neck</option>
-            <option value="caged">CAGED positions</option>
-            <option value="3nps">3 notes per string</option>
-            <option value="custom">Custom shape</option>
-          </select>
-        </label>
-        <label class="chk"><input type="checkbox" id="opt-roots" checked> emphasize roots</label>
-        <label class="chk"><input type="checkbox" id="opt-rings" checked> ring chord tones</label>
-        <span id="pos-controls" class="pos-controls" hidden>
-          <button class="btn" data-action="pos-prev" aria-label="Previous position">‹</button>
-          <span id="pos-label" class="small"></span>
-          <button class="btn" data-action="pos-next" aria-label="Next position">›</button>
-        </span>
-        <button class="btn" id="clear-custom" data-action="clear-custom" hidden>Clear shape</button>
-      </div>
-    </div>
-    <div class="fret-scroll"><div id="fret-wrap"></div></div>
-    <div id="fret-legend" class="legend"></div>
-    <div id="fret-status" class="status mono" aria-live="polite">Click any note to hear it and see what it does over the focused chord.</div>
-  </section>
+    <aside class="studio-rail">
+      <h2 class="sec-title rail-title">Reference</h2>
+      <div id="perchord-block"></div>
+      <div id="theory-panel" class="theory-stack"></div>
+    </aside>
+  </div>
 </main>
 
 <main id="view-library" hidden>
@@ -548,11 +575,48 @@ g.note.clickable { cursor: pointer; }
     <div id="lib-cats" class="chip-row lib-cats"></div>
     <div id="lib-list" class="lib-grid"></div>
   </section>
+  <footer class="foot">
+    Build a progression → light up the neck → understand why. All sound is synthesized live in your browser.
+  </footer>
 </main>
+</div>
 
-<footer class="foot">
-  Build a progression → light up the neck → understand why. All sound is synthesized live in your browser.
-</footer>
+<div id="neck-dock">
+  <div class="dock-bar">
+    <button id="dock-toggle" class="dock-toggle" data-action="dock-toggle" aria-expanded="true">The neck <span id="dock-caret">▾</span></button>
+    <div class="fret-controls">
+      <label class="ctl">Labels
+        <select id="label-mode">
+          <option value="names" selected>Note names</option>
+          <option value="intervals">Intervals (♭3, ♯4…)</option>
+          <option value="degrees">Degrees (1–7)</option>
+          <option value="none">None</option>
+        </select>
+      </label>
+      <label class="ctl">View
+        <select id="view-mode">
+          <option value="full" selected>Full neck</option>
+          <option value="caged">CAGED positions</option>
+          <option value="3nps">3 notes per string</option>
+          <option value="custom">Custom shape</option>
+        </select>
+      </label>
+      <label class="chk"><input type="checkbox" id="opt-roots" checked> scale root ring</label>
+      <span id="pos-controls" class="pos-controls" hidden>
+        <button class="btn" data-action="pos-prev" aria-label="Previous position">‹</button>
+        <span id="pos-label" class="small"></span>
+        <button class="btn" data-action="pos-next" aria-label="Next position">›</button>
+      </span>
+      <button class="btn" id="clear-custom" data-action="clear-custom" hidden>Clear shape</button>
+    </div>
+  </div>
+  <div class="dock-body">
+    <div class="fret-scroll"><div id="fret-wrap"></div></div>
+    <div class="dock-foot">
+      <div id="fret-legend" class="legend"></div>
+      <div id="fret-status" class="status mono" aria-live="polite">Click any note to hear it and see what it does over the focused chord.</div>
+    </div>
+  </div>
 </div>
 <script>
 /* ============================================================
@@ -980,11 +1044,23 @@ function pieSlice(cx, cy, r, a0, a1) {
   return `M${cx},${cy} L${x0.toFixed(2)},${y0.toFixed(2)} A${r},${r} 0 ${large} 1 ${x1.toFixed(2)},${y1.toFixed(2)} Z`;
 }
 
+// Semantic note-function color: root / chord tone / scale tone /
+// tension / avoid, judged against the focused chord (design critique §4).
+function fnColor(pc, chord) {
+  const cls = classifyNote(pc, chord);
+  if (mod12(pc - chord.root) === 0) return { fill: 'var(--fn-root)', text: '#fdf6ea' };
+  if (cls.role === 'chord') return { fill: 'var(--fn-chord)', text: '#241a0c' };
+  if (cls.role === 'avoid') return { fill: 'var(--fn-avoid)', text: '#241a0c' };
+  if (['♭9', '♯9', '♯11', '♭13'].includes(cls.name)) return { fill: 'var(--fn-tension)', text: '#f4effc' };
+  return { fill: 'var(--fn-scale)', text: '#eef7f3' };
+}
+
 function renderFretboard(opts) {
   const {
     frets = 24, compact = false, scales = [], labelMode = 'names',
     emphasizeRoots = true, window: win = null, customSet = null,
-    filterSet = null, focusPcs = null, interactive = true, idPrefix = 'fb',
+    filterSet = null, focusPcs = null, focusChord = null,
+    interactive = true, idPrefix = 'fb',
   } = opts;
 
   const rowH = compact ? 20 : 27;
@@ -1087,8 +1163,10 @@ function renderFretboard(opts) {
 
       let g = `<g class="note${interactive ? ' clickable' : ''}" data-s="${st}" data-f="${f}" data-pc="${pc}" opacity="${opacity}">`;
 
+      let textFill = '#fdf9f0';
       if (isCustom && !mem.length) {
         g += `<circle cx="${x}" cy="${y}" r="${r}" fill="var(--surface2)" stroke="var(--accent)" stroke-width="2" stroke-dasharray="3 2.4"/>`;
+        textFill = 'var(--ink)';
       } else if (multi && mem.length > 1) {
         const k = mem.length;
         mem.forEach((m, i) => {
@@ -1099,9 +1177,13 @@ function renderFretboard(opts) {
         g += `<circle cx="${x}" cy="${y}" r="${rr}" fill="none" stroke="#1d140c" stroke-width="1" opacity="0.5"/>`;
       } else {
         const m = mem[0];
-        const fill = multi
-          ? `var(--sc${m.scaleIdx})`
-          : `var(--deg${degreeNumber(m.degree)})`;
+        let fill;
+        if (multi) fill = `var(--sc${m.scaleIdx})`;
+        else if (focusChord) {
+          const fn = fnColor(pc, focusChord);
+          fill = fn.fill;
+          textFill = fn.text;
+        } else fill = `var(--deg${degreeNumber(m.degree)})`;
         g += `<circle cx="${x}" cy="${y}" r="${rr}" fill="${fill}" stroke="#1d140c" stroke-width="1" ${isCustom ? 'stroke-dasharray="3 2.4"' : ''}/>`;
       }
 
@@ -1118,7 +1200,7 @@ function renderFretboard(opts) {
       else if (labelMode === 'degrees' && m0) label = String(degreeNumber(m0.degree));
       if (isCustom && !mem.length) label = labelMode === 'none' ? '' : PC_PREFERRED[pc];
       if (label)
-        g += `<text x="${x}" y="${y + (compact ? 2.6 : 3.4)}" font-size="${compact ? 7.5 : (label.length > 2 ? 8 : 9.5)}" fill="#fdf9f0" text-anchor="middle" font-weight="600">${label}</text>`;
+        g += `<text x="${x}" y="${y + (compact ? 2.6 : 3.4)}" font-size="${compact ? 7.5 : (label.length > 2 ? 8 : 9.5)}" fill="${textFill}" text-anchor="middle" font-weight="600">${label}</text>`;
       g += '</g>';
       s += g;
     }
@@ -1378,11 +1460,13 @@ const LIBRARY_TOPICS = [
    Fretwork — UI layer
    Single state object, full re-render per section on change,
    event delegation via data-action attributes.
+   Layout per design critique: progression → answer → docked neck,
+   with theory as reference in a right rail. Dark by default.
    ============================================================ */
 
 const state = {
   tab: 'studio',
-  theme: 'auto', // auto | light | dark
+  theme: 'dark', // dark (default) | light | auto
   chords: [
     { root: 2, type: 'min7' },
     { root: 7, type: 'dom7' },
@@ -1392,10 +1476,10 @@ const state = {
   selected: [{ root: 0, key: 'ionian' }], // up to 4 {root, key}
   labelMode: 'names',
   emphasizeRoots: true,
-  ringChordTones: true,
   view: 'full', // full | caged | 3nps | custom
   posIndex: 0,
   customSet: new Set(),
+  dockCollapsed: false,
   libQuery: '',
   libCat: 'All',
 };
@@ -1403,7 +1487,6 @@ const state = {
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-const scaleId = (s) => s.root + ':' + s.key;
 const isSelected = (root, key) => state.selected.some((s) => s.root === root && s.key === key);
 const scaleLabel = (root, key) => spellScale(root, key).rootName + ' ' + SCALES[key].name;
 
@@ -1419,106 +1502,150 @@ function toggleScale(root, key) {
 }
 
 /* ================= Progression builder ================= */
+const TYPE_SHORT = (k) => CHORD_TYPES[k].symbol || 'maj';
+
 function renderProgression() {
   const rail = $('#prog-rail');
   rail.innerHTML = state.chords.map((c, i) => {
-    const sym = chordSymbol(c);
     const spelled = spellChord(c.root, c.type);
-    const rootOpts = ROOT_CHOICES.map((r) =>
-      `<option value="${r.pc}" ${r.pc === c.root ? 'selected' : ''}>${r.label}</option>`).join('');
-    const typeOpts = Object.entries(CHORD_TYPES).map(([k, t]) =>
-      `<option value="${k}" ${k === c.type ? 'selected' : ''}>${t.name}</option>`).join('');
     return `<div class="chord-card ${i === state.focus ? 'focused' : ''}" data-action="focus-chord" data-idx="${i}">
-      <div class="chord-sym" data-action="play-chord" data-idx="${i}" title="Play chord">${esc(sym)}</div>
+      <div class="chord-sym" data-action="play-chord" data-idx="${i}" title="Play chord">${esc(chordSymbol(c))}</div>
       <div class="chord-notes mono">${spelled.notes.join(' ')}</div>
-      <div class="chord-selects">
-        <select data-role="chord-root" data-idx="${i}" aria-label="Chord root">${rootOpts}</select>
-        <select data-role="chord-type" data-idx="${i}" aria-label="Chord type">${typeOpts}</select>
-      </div>
       <button class="chord-remove" data-action="remove-chord" data-idx="${i}" ${state.chords.length <= 2 ? 'disabled' : ''} aria-label="Remove chord">×</button>
     </div>`;
-  }).join('<div class="chord-arrow">→</div>');
-  $('#add-chord').disabled = state.chords.length >= 12;
-  $('#prog-count').textContent = state.chords.length + ' chords';
+  }).join('<div class="chord-arrow">→</div>')
+  + `<button class="add-chip" data-action="add-chord" ${state.chords.length >= 12 ? 'disabled' : ''} aria-label="Add chord">＋</button>`;
+  $('#prog-count').textContent = state.chords.length + ' chords · 2–12';
+  renderChordEditor();
 }
 
-/* ================= Scale suggestions ================= */
+// Tap-target editor for the focused chord (no native dropdowns).
+function renderChordEditor() {
+  const c = state.chords[state.focus];
+  const roots = ROOT_CHOICES.map((r) =>
+    `<button class="ed-btn ${r.pc === c.root ? 'on' : ''}" data-action="set-root" data-pc="${r.pc}">${PC_PREFERRED[r.pc]}</button>`).join('');
+  const types = Object.keys(CHORD_TYPES).map((k) =>
+    `<button class="ed-btn ${k === c.type ? 'on' : ''}" data-action="set-type" data-key="${k}" title="${esc(CHORD_TYPES[k].name)}">${esc(TYPE_SHORT(k))}</button>`).join('');
+  $('#chord-editor').innerHTML = `<div class="editor">
+    <div class="ed-label mono">editing ${esc(chordSymbol(c))}</div>
+    <div class="ed-row ed-roots">${roots}</div>
+    <div class="ed-row ed-types">${types}</div>
+  </div>`;
+}
+
+/* ================= The answer (three-tier scales) ================= */
 function chipFor(root, key, extra = '') {
   const on = isSelected(root, key);
   return `<button class="chip ${on ? 'on' : ''}" data-action="toggle-scale" data-root="${root}" data-key="${key}">
     ${esc(scaleLabel(root, key))}${extra}</button>`;
 }
 
-function renderSuggestions() {
+// Chip with a fill bar behind it — length encodes fit, per critique.
+function barChip(a) {
+  const on = isSelected(a.root, a.key);
+  const pct = Math.round(a.frac * 100);
+  return `<button class="chip bar ${a.near ? 'dull' : 'gold'} ${on ? 'on' : ''}"
+    data-action="toggle-scale" data-root="${a.root}" data-key="${a.key}"
+    style="--fill:${pct}%">${esc(scaleLabel(a.root, a.key))}</button>`;
+}
+
+function renderAnswer() {
   const match = matchScales(state.chords);
   const { families, singles } = groupFullFits(match.full);
   const n = state.chords.length;
+  const card = $('#answer-card');
+  const altRow = $('#alt-row');
+  const more = $('#more-scales');
 
-  let html = '';
-  if (!match.full.length) {
+  let alts = [];
+  let moreList = [];
+
+  if (families.length) {
+    const fam = families[0];
+    const parentName = spellScale(fam.parentRoot, fam.fam.parent).rootName;
+    let reason = `<b>${esc(parentName)} ${fam.fam.label}</b> — all ${n} chords live here.`;
+    const first = state.chords[0];
+    const m = fam.modes.find((mm) => mm.root === first.root && mm.key !== fam.fam.parent);
+    if (m) reason += ` Start on ${esc(spellScale(m.root, m.key).rootName)} for ${esc(SCALES[m.key].name)} color over the ${esc(chordSymbol(first))}.`;
+    card.innerHTML = `<div class="answer">
+      <div class="answer-status mono">fits all ${n} chords</div>
+      <p class="answer-reason">${reason}</p>
+      <div class="chip-row">${fam.modes.map((mm) => chipFor(mm.root, mm.key)).join('')}</div>
+    </div>`;
+    families.slice(1).forEach((f2) => alts.push({ root: f2.parentRoot, key: f2.fam.parent, frac: 1 }));
+    singles.forEach((e) => alts.push({ root: e.root, key: e.key, frac: 1 }));
+    match.near.forEach((e) => alts.push({ root: e.root, key: e.key, frac: e.count / n, near: true }));
+  } else {
     const allDominant = state.chords.every((c) => CHORD_TYPES[c.type].family === 'dominant');
+    const r = state.chords[0].root;
     if (allDominant) {
-      const r = state.chords[0].root;
-      html += `<div class="fam-card"><div class="fam-head"><b>The blues answer</b>
-        <span class="badge">convention beats theory</span></div>
-        <p class="muted small">All-dominant progressions never share one scale — that clash <i>is</i> the blues.
-        By convention, the minor pentatonic/blues scale of the I chord plays over everything;
-        the ♭3-against-major-3rd rub is the blue note.</p>
-        <div class="chip-row">${chipFor(r, 'minBlues')}${chipFor(r, 'minPent')}${chipFor(r, 'majBlues')}${chipFor(r, 'mixolydian')}</div>
+      card.innerHTML = `<div class="answer">
+        <div class="answer-status mono">no single fit — and that is the blues</div>
+        <p class="answer-reason"><b>${esc(spellScale(r, 'minBlues').rootName)} minor blues</b> over everything.
+        All-dominant progressions never share one scale; the ♭3-against-major-3rd rub is the blue note.</p>
+        <div class="chip-row">${chipFor(r, 'minBlues')}${chipFor(r, 'minPent')}${chipFor(r, 'majBlues')}</div>
       </div>`;
+      state.chords.forEach((c, i) => {
+        match.perChord[i].slice(0, 1).forEach((s) => alts.push({ root: s.root, key: s.key, frac: s.overlap }));
+      });
     } else {
-      html += `<p class="muted">No single scale contains every chord — this progression modulates.
-        Use the per-chord suggestions below and switch scales as the chords change.</p>`;
+      const top = match.perChord[0][0];
+      card.innerHTML = `<div class="answer">
+        <div class="answer-status mono">no single fit — this progression modulates</div>
+        <p class="answer-reason">Switch scales as the chords change. Start with
+        <b>${esc(scaleLabel(top.root, top.key))}</b> over the ${esc(chordSymbol(state.chords[0]))},
+        then follow the chord-by-chord picks in the reference rail.</p>
+        <div class="chip-row">${match.perChord[0].slice(0, 3).map((s) => chipFor(s.root, s.key)).join('')}</div>
+      </div>`;
+      match.near.forEach((e) => alts.push({ root: e.root, key: e.key, frac: e.count / n, near: true }));
     }
   }
-  for (const fam of families.slice(0, 4)) {
-    const parentName = spellScale(fam.parentRoot, fam.fam.parent).rootName;
-    html += `<div class="fam-card">
-      <div class="fam-head"><b>${esc(parentName)} ${fam.fam.label}</b>
-        <span class="badge">fits all ${n}</span></div>
-      <div class="chip-row">${fam.modes.map((m) => chipFor(m.root, m.key)).join('')}</div>
-    </div>`;
-  }
-  const singlesShown = singles.slice(0, 14);
-  if (singlesShown.length) {
-    html += `<div class="fam-card"><div class="fam-head"><b>Other full fits</b>
-      <span class="badge">fits all ${n}</span></div>
-      <div class="chip-row">${singlesShown.map((e) => chipFor(e.root, e.key)).join('')}</div></div>`;
-  }
-  $('#sugg-full').innerHTML = html;
 
-  // Near fits
-  const nearBox = $('#sugg-near');
-  if (match.near.length) {
-    nearBox.hidden = false;
-    const items = match.near.slice(0, 10).map((e) => {
-      const clash = state.chords.filter((_, i) => !e.fits[i]).map(chordSymbol).join(', ');
-      return chipFor(e.root, e.key, ` <small>clashes: ${esc(clash)}</small>`);
-    }).join('');
-    nearBox.querySelector('div').innerHTML = `<div class="chip-row">${items}</div>`;
-  } else nearBox.hidden = true;
+  // dedupe alts against each other and the answer card
+  const seen = new Set(state.selected.map((s) => s.root + ':' + s.key));
+  alts = alts.filter((a) => {
+    const id = a.root + ':' + a.key;
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+  const shown = alts.slice(0, 4);
+  moreList = alts.slice(4);
 
-  // Per-chord
-  $('#sugg-perchord').innerHTML = '<h3>Chord-by-chord choices</h3>' + state.chords.map((c, i) => {
-    const chips = match.perChord[i].map((s) =>
-      chipFor(s.root, s.key, ` <small>${Math.round(s.overlap * 100)}% in context</small>`)).join('');
-    return `<div class="perchord-row"><span class="pc-label mono">${esc(chordSymbol(c))}</span>
-      <div class="chip-row">${chips}</div></div>`;
-  }).join('');
+  altRow.innerHTML = shown.length
+    ? `<h3>Alternatives</h3><div class="chip-row">${shown.map(barChip).join('')}</div>`
+    : '';
 
-  // Selected scales
+  if (moreList.length) {
+    more.hidden = false;
+    more.querySelector('summary').textContent = moreList.length + ' more options';
+    more.querySelector('div').innerHTML = `<div class="chip-row">${moreList.map(barChip).join('')}</div>`;
+  } else more.hidden = true;
+
   $('#selected-scales').innerHTML = state.selected.length
     ? '<h3>On the neck now</h3><div class="sel-row">' + state.selected.map((s, i) => {
       const multi = state.selected.length > 1;
-      const sw = multi ? `style="background:var(--sc${i})"` : `style="background:var(--deg1)"`;
+      const sw = multi ? `style="background:var(--sc${i})"` : `style="background:var(--fn-scale)"`;
       return `<span class="sel-pill"><i class="swatch" ${sw}></i>${esc(scaleLabel(s.root, s.key))}
         <button data-action="play-scale" data-i="${i}" title="Play scale">▶</button>
         <button data-action="remove-scale" data-i="${i}" aria-label="Remove">×</button></span>`;
     }).join('') + '</div>'
-    : '<p class="muted">Pick one or more scales above to light up the neck (up to 4 overlay together).</p>';
+    : '<p class="muted">Pick a scale above to light up the neck (up to 4 overlay together).</p>';
+
+  return match;
 }
 
-/* ================= Theory panel ================= */
+/* ================= Reference rail ================= */
+function renderPerChord(match) {
+  $('#perchord-block').innerHTML = '<h3>Chord-by-chord</h3>' + state.chords.map((c, i) => {
+    const chips = match.perChord[i].map((s) =>
+      barChip({ root: s.root, key: s.key, frac: s.overlap })).join('');
+    return `<div class="perchord-row"><span class="pc-label mono">${esc(chordSymbol(c))}</span>
+      <div class="chip-row">${chips}</div></div>`;
+  }).join('');
+}
+
+/* ================= Theory cards ================= */
 function whyItFits(sel) {
   const pcs = new Set(scalePcs(sel.root, sel.key));
   const rows = state.chords.map((c) => {
@@ -1546,7 +1673,8 @@ function noteMapCard() {
   const pcs = scalePcs(sel.root, sel.key);
   const chips = pcs.map((pc, i) => {
     const cls = classifyNote(pc, c);
-    return `<span class="nchip ${cls.role}" title="${cls.role}">${esc(spelled.notes[i])}
+    const role = mod12(pc - c.root) === 0 ? 'root' : cls.role;
+    return `<span class="nchip ${role}" title="${role === 'root' ? 'chord root' : cls.role}">${esc(spelled.notes[i])}
       <small>${esc(cls.name)}</small></span>`;
   }).join('');
   const avoids = pcs.filter((pc) => classifyNote(pc, c).role === 'avoid');
@@ -1554,7 +1682,7 @@ function noteMapCard() {
     ? `Avoid notes sit a half step above a chord tone — use them in passing, don’t sustain them.`
     : `No avoid notes over this chord — every non-chord tone is a sustainable tension.`;
   return `<div class="tcard"><h3>Note map · over ${esc(chordSymbol(c))}</h3>
-    <p class="muted small">${esc(scaleLabel(sel.root, sel.key))}, note by note. Solid = chord tone, outlined = tension, struck = avoid.</p>
+    <p class="muted small">${esc(scaleLabel(sel.root, sel.key))}, note by note — same colors as the neck.</p>
     <div class="nchip-row">${chips}</div><p class="small muted">${avoidTxt}</p></div>`;
 }
 
@@ -1656,13 +1784,13 @@ function lickCard() {
 
 function renderTheory() {
   const why = state.selected.length
-    ? `<div class="tcard wide"><h3>Why these scales fit</h3>${state.selected.map(whyItFits).join('')}</div>`
-    : `<div class="tcard wide"><h3>Why these scales fit</h3><p class="muted">Select a scale to see the chord-by-chord reasoning.</p></div>`;
+    ? `<div class="tcard"><h3>Why these scales fit</h3>${state.selected.map(whyItFits).join('')}</div>`
+    : `<div class="tcard"><h3>Why these scales fit</h3><p class="muted">Select a scale to see the chord-by-chord reasoning.</p></div>`;
   $('#theory-panel').innerHTML =
     why + noteMapCard() + targetsCard() + voiceLeadingCard() + modalCard() + arpeggioCard() + lickCard();
 }
 
-/* ================= Fretboard section ================= */
+/* ================= Docked neck ================= */
 function currentWindow() {
   if (state.view !== 'caged' || !state.selected.length) return null;
   const wins = cagedWindows(state.selected[0].root);
@@ -1678,12 +1806,13 @@ function currentFilter() {
 }
 
 function renderFretboardPanel() {
-  const scales = state.selected.map((s, i) => ({
+  const scales = state.selected.map((s) => ({
     key: s.key, rootPc: s.root, spelled: spellScale(s.root, s.key),
   }));
   const winInfo = currentWindow();
   const filtInfo = currentFilter();
   const focusChord = state.chords[state.focus];
+  const single = scales.length === 1;
 
   $('#fret-wrap').innerHTML = renderFretboard({
     scales,
@@ -1692,7 +1821,8 @@ function renderFretboardPanel() {
     window: winInfo ? winInfo.win : null,
     filterSet: filtInfo ? filtInfo.set : null,
     customSet: state.view === 'custom' ? state.customSet : null,
-    focusPcs: state.ringChordTones ? new Set(chordPcs(focusChord.root, focusChord.type)) : null,
+    focusChord: single ? focusChord : null,
+    focusPcs: !single && scales.length ? new Set(chordPcs(focusChord.root, focusChord.type)) : null,
   });
 
   const posBox = $('#pos-controls');
@@ -1702,21 +1832,34 @@ function renderFretboardPanel() {
   } else posBox.hidden = true;
   $('#clear-custom').hidden = state.view !== 'custom';
 
-  // Legend
+  // Legend: one place, function colors, chord named once (critique §4).
+  const sym = chordSymbol(focusChord);
   let legend = '';
-  if (state.selected.length > 1) {
+  if (single) {
+    legend =
+      `<span class="lg"><i class="swatch" style="background:var(--fn-root)"></i>root of ${esc(sym)}</span>` +
+      `<span class="lg"><i class="swatch" style="background:var(--fn-chord)"></i>chord tone</span>` +
+      `<span class="lg"><i class="swatch" style="background:var(--fn-scale)"></i>scale tone</span>` +
+      `<span class="lg"><i class="swatch" style="background:var(--fn-tension)"></i>tension</span>` +
+      `<span class="lg"><i class="swatch" style="background:var(--fn-avoid)"></i>avoid</span>`;
+  } else if (scales.length > 1) {
     legend = state.selected.map((s, i) =>
-      `<span class="lg"><i class="swatch" style="background:var(--sc${i})"></i>${esc(scaleLabel(s.root, s.key))}</span>`).join('');
-  } else if (state.selected.length === 1) {
-    const degs = [...new Set(SCALES[state.selected[0].key].degrees.map(degreeNumber))];
-    legend = degs.map((d) =>
-      `<span class="lg"><i class="swatch" style="background:var(--deg${d})"></i>${d === 1 ? 'root' : 'degree ' + d}</span>`).join('');
+      `<span class="lg"><i class="swatch" style="background:var(--sc${i})"></i>${esc(scaleLabel(s.root, s.key))}</span>`).join('') +
+      `<span class="lg"><i class="swatch ring"></i>chord tones of ${esc(sym)}</span>`;
   }
-  if (state.ringChordTones)
-    legend += `<span class="lg"><i class="swatch ring"></i>chord tones of ${esc(chordSymbol(focusChord))}</span>`;
   if (state.view === 'custom')
     legend += `<span class="lg muted">click anywhere on the neck to build your own shape</span>`;
   $('#fret-legend').innerHTML = legend;
+}
+
+function syncDock() {
+  const dock = $('#neck-dock');
+  const inStudio = state.tab === 'studio';
+  dock.hidden = !inStudio;
+  dock.classList.toggle('collapsed', state.dockCollapsed);
+  $('#dock-caret').textContent = state.dockCollapsed ? '▴' : '▾';
+  $('#dock-toggle').setAttribute('aria-expanded', String(!state.dockCollapsed));
+  document.body.style.paddingBottom = inStudio ? dock.offsetHeight + 24 + 'px' : '';
 }
 
 /* ================= Library ================= */
@@ -1791,12 +1934,14 @@ function render() {
     b.classList.toggle('on', b.dataset.tab === state.tab));
   if (state.tab === 'studio') {
     renderProgression();
-    renderSuggestions();
+    const match = renderAnswer();
+    renderPerChord(match);
     renderTheory();
     renderFretboardPanel();
   } else {
     renderLibrary();
   }
+  syncDock();
 }
 
 /* ================= Events ================= */
@@ -1834,13 +1979,14 @@ function wireEvents() {
     const a = el.dataset.action;
     if (a === 'tab') { state.tab = el.dataset.tab; render(); }
     else if (a === 'theme') {
-      state.theme = { auto: 'light', light: 'dark', dark: 'auto' }[state.theme];
+      state.theme = { dark: 'light', light: 'auto', auto: 'dark' }[state.theme];
       applyTheme();
     }
     else if (a === 'add-chord') {
       if (state.chords.length < 12) {
         const last = state.chords[state.chords.length - 1];
         state.chords.push({ root: mod12(last.root + 5), type: last.type });
+        state.focus = state.chords.length - 1;
         render();
       }
     }
@@ -1855,6 +2001,8 @@ function wireEvents() {
     else if (a === 'focus-chord') { state.focus = +el.dataset.idx; render(); }
     else if (a === 'play-chord') { ev.stopPropagation(); Audio_.playChord(state.chords[+el.dataset.idx]); }
     else if (a === 'play-prog') Audio_.playProgression(state.chords);
+    else if (a === 'set-root') { state.chords[state.focus].root = +el.dataset.pc; render(); }
+    else if (a === 'set-type') { state.chords[state.focus].type = el.dataset.key; render(); }
     else if (a === 'toggle-scale') toggleScale(+el.dataset.root, el.dataset.key);
     else if (a === 'remove-scale') { state.selected.splice(+el.dataset.i, 1); render(); }
     else if (a === 'play-scale') { const s = state.selected[+el.dataset.i]; Audio_.playScale(s.root, s.key); }
@@ -1865,6 +2013,7 @@ function wireEvents() {
     else if (a === 'pos-prev') { state.posIndex = Math.max(0, state.posIndex - 1); renderFretboardPanel(); }
     else if (a === 'pos-next') { state.posIndex += 1; renderFretboardPanel(); }
     else if (a === 'clear-custom') { state.customSet.clear(); renderFretboardPanel(); }
+    else if (a === 'dock-toggle') { state.dockCollapsed = !state.dockCollapsed; syncDock(); }
     else if (a === 'lib-cat') { state.libCat = el.dataset.cat; renderLibrary(); }
     else if (a === 'lib-play-scale') Audio_.playScale(0, el.dataset.key);
     else if (a === 'lib-play-chord') Audio_.playChord({ root: 0, type: el.dataset.key });
@@ -1887,19 +2036,17 @@ function wireEvents() {
 
   document.addEventListener('change', (ev) => {
     const el = ev.target;
-    const role = el.dataset.role;
-    if (role === 'chord-root') { state.chords[+el.dataset.idx].root = +el.value; render(); }
-    else if (role === 'chord-type') { state.chords[+el.dataset.idx].type = el.value; render(); }
-    else if (el.id === 'label-mode') { state.labelMode = el.value; renderFretboardPanel(); }
+    if (el.id === 'label-mode') { state.labelMode = el.value; renderFretboardPanel(); }
     else if (el.id === 'view-mode') { state.view = el.value; state.posIndex = 0; renderFretboardPanel(); }
     else if (el.id === 'opt-roots') { state.emphasizeRoots = el.checked; renderFretboardPanel(); }
-    else if (el.id === 'opt-rings') { state.ringChordTones = el.checked; renderFretboardPanel(); }
   });
 
   $('#lib-search').addEventListener('input', (ev) => {
     state.libQuery = ev.target.value;
     renderLibrary();
   });
+
+  if (window.ResizeObserver) new ResizeObserver(syncDock).observe($('#neck-dock'));
 }
 
 function applyTheme() {
@@ -1909,7 +2056,6 @@ function applyTheme() {
   $('#theme-btn').textContent = { auto: '◐ auto', light: '☀ light', dark: '● dark' }[state.theme];
 }
 
-/* ================= Init ================= */
 /* Splash: ported from the user's Claude Design canvas. Pluckable
    glowing strings, cycling chord chips, strum, Enter → Studio. */
 function wireSplash() {
@@ -2064,6 +2210,8 @@ function wireSplash() {
   });
 }
 
+/* ================= Init ================= */
+state.dockCollapsed = window.innerWidth < 700;
 wireEvents();
 wireSplash();
 applyTheme();
