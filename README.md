@@ -3,8 +3,9 @@
 A complete, dependency-free web app: build a chord progression, see every scale and
 mode that fits it on an interactive 24-fret neck, and read live theory explaining why.
 
-**Live app:** https://claude.ai/code/artifact/9088c6df-b44c-46b0-98c5-accf1a64ae94
-(also runs locally — open `preview.html` in any browser)
+**Live app:** https://diazjulio9290.github.io/fretwork/ · user guide at
+[/guide.html](https://diazjulio9290.github.io/fretwork/guide.html)
+(also runs locally — open `index.html` in any browser)
 
 ## Why vanilla JS
 
