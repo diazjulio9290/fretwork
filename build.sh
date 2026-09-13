@@ -11,7 +11,7 @@ OUT=app.html
   echo '</style>'
   cat src/body.html
   echo '<script>'
-  cat src/theory.js src/engine.js src/fretboard.js src/audio.js src/library.js src/ui.js
+  cat src/theory.js src/engine.js src/fretboard.js src/audio.js src/player.js src/library.js src/ui.js
   echo '</script>'
 } > "$OUT"
 

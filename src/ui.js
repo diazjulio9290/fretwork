@@ -29,6 +29,41 @@ const state = {
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+/* ---- Persistence (best effort; storage can be absent or blocked) ---- */
+const STORE_KEY = 'fretwork.v2';
+function persist() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify({
+      theme: state.theme, chords: state.chords, focus: state.focus, selected: state.selected,
+      labelMode: state.labelMode, emphasizeRoots: state.emphasizeRoots, view: state.view,
+      bpm: Player.bpm, beats: Player.beats, loop: Player.loop, follow: Player.follow,
+      volume: Audio_.volume, muted: Audio_.muted,
+    }));
+  } catch (e) { /* storage unavailable */ }
+}
+function restore() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (e) { return; }
+  if (!saved || typeof saved !== 'object') return;
+  const validChord = (c) => c && Number.isInteger(c.root) && c.root >= 0 && c.root < 12 && CHORD_TYPES[c.type];
+  const validScale = (s) => s && Number.isInteger(s.root) && s.root >= 0 && s.root < 12 && SCALES[s.key];
+  if (Array.isArray(saved.chords) && saved.chords.length && saved.chords.every(validChord))
+    state.chords = saved.chords.slice(0, 12).map((c) => ({ root: c.root, type: c.type }));
+  if (Array.isArray(saved.selected) && saved.selected.every(validScale))
+    state.selected = saved.selected.slice(0, 4).map((s) => ({ root: s.root, key: s.key }));
+  if (Number.isInteger(saved.focus)) state.focus = Math.max(0, Math.min(state.chords.length - 1, saved.focus));
+  if (['dark', 'light', 'auto'].includes(saved.theme)) state.theme = saved.theme;
+  if (['names', 'intervals', 'degrees', 'none'].includes(saved.labelMode)) state.labelMode = saved.labelMode;
+  if (['full', 'caged', '3nps', 'custom'].includes(saved.view)) state.view = saved.view;
+  if (typeof saved.emphasizeRoots === 'boolean') state.emphasizeRoots = saved.emphasizeRoots;
+  if (Number.isFinite(saved.bpm)) Player.bpm = Math.max(40, Math.min(220, Math.round(saved.bpm)));
+  if ([2, 4, 8].includes(saved.beats)) Player.beats = saved.beats;
+  if (typeof saved.loop === 'boolean') Player.loop = saved.loop;
+  if (typeof saved.follow === 'boolean') Player.follow = saved.follow;
+  if (Number.isFinite(saved.volume)) Audio_.volume = Math.max(0, Math.min(1, saved.volume));
+  if (typeof saved.muted === 'boolean') Audio_.muted = saved.muted;
+}
+
 const isSelected = (root, key) => state.selected.some((s) => s.root === root && s.key === key);
 const scaleLabel = (root, key) => spellScale(root, key).rootName + ' ' + SCALES[key].name;
 
@@ -50,7 +85,9 @@ function renderProgression() {
   const rail = $('#prog-rail');
   rail.innerHTML = state.chords.map((c, i) => {
     const spelled = spellChord(c.root, c.type);
-    return `<div class="chord-card ${i === state.focus ? 'focused' : ''}" data-action="focus-chord" data-idx="${i}">
+    const playing = Player.playing && Player.mode === 'prog' && Player.chordIndex === i;
+    return `<div class="chord-card ${i === state.focus ? 'focused' : ''} ${playing ? 'playing' : ''}" data-action="focus-chord" data-idx="${i}"
+      ${playing ? `style="--len:${(Player.secPerBeat() * Player.beats).toFixed(2)}s"` : ''}>
       <div class="chord-sym" data-action="play-chord" data-idx="${i}" title="Play chord">${esc(chordSymbol(c))}</div>
       <div class="chord-notes mono">${spelled.notes.join(' ')}</div>
       <button class="chord-remove" data-action="remove-chord" data-idx="${i}"
@@ -489,6 +526,99 @@ function render() {
     renderLibrary();
   }
   syncDock();
+  persist();
+}
+
+/* ================= Playback visuals ================= */
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+// Expanding ring on a fretboard note (removed when the animation ends).
+function pingNote(g, seconds = 0.7) {
+  const c = g.querySelector('circle');
+  if (!c) return;
+  const ring = document.createElementNS(SVG_NS, 'circle');
+  ring.setAttribute('cx', c.getAttribute('cx'));
+  ring.setAttribute('cy', c.getAttribute('cy'));
+  ring.setAttribute('r', String(+c.getAttribute('r') + 2));
+  ring.setAttribute('class', 'ping');
+  ring.addEventListener('animationend', () => ring.remove());
+  g.appendChild(ring);
+  g.classList.add('lit');
+  setTimeout(() => g.classList.remove('lit'), Math.min(1400, seconds * 1000));
+}
+function pingChordNotes(chord, seconds) {
+  const pcs = new Set(chordPcs(chord.root, chord.type));
+  document.querySelectorAll('#fret-wrap g.note').forEach((g) => {
+    if (pcs.has(+g.dataset.pc)) pingNote(g, seconds);
+  });
+}
+function pingFret(s, f, seconds) {
+  const g = document.querySelector(`#fret-wrap g.note[data-s="${s}"][data-f="${f}"]`);
+  if (g) pingNote(g, seconds);
+}
+
+function markPlayingCard(idx, seconds) {
+  document.querySelectorAll('.chord-card.playing').forEach((el) => el.classList.remove('playing'));
+  const card = document.querySelector(`.chord-card[data-idx="${idx}"]`);
+  if (!card) return;
+  card.style.setProperty('--len', seconds.toFixed(2) + 's');
+  card.classList.add('playing');
+  const rail = $('#prog-rail');
+  const l = card.offsetLeft - rail.offsetLeft;
+  if (l < rail.scrollLeft || l + card.offsetWidth > rail.scrollLeft + rail.clientWidth)
+    rail.scrollTo({ left: Math.max(0, l - 24), behavior: 'smooth' });
+}
+
+function renderBeatDots(active = -1) {
+  const n = Player.beats;
+  $('#beat-dots').innerHTML = Array.from({ length: n }, (_, b) =>
+    `<i class="${b === active ? 'on' : ''}${b === 0 ? ' down' : ''}"></i>`).join('');
+}
+
+function syncTransport() {
+  const live = Player.playing && Player.mode === 'prog';
+  const btn = $('#play-btn');
+  btn.classList.toggle('live', live);
+  btn.setAttribute('aria-pressed', String(live));
+  btn.querySelector('.play-ico').textContent = live ? '■' : '▶';
+  $('#play-label').textContent = live ? 'Stop' : (Player.loop ? 'Loop' : 'Play');
+  $('#bpm').value = Player.bpm;
+  $('#bpm-val').textContent = Player.bpm;
+  $('#beats').value = String(Player.beats);
+  $('#opt-loop').checked = Player.loop;
+  $('#opt-follow').checked = Player.follow;
+  $('#vol').value = Math.round(Audio_.volume * 100);
+  $('#mute-btn').textContent = Audio_.muted ? '🔇' : (Audio_.volume < 0.4 ? '🔉' : '🔊');
+  $('#mute-btn').setAttribute('aria-pressed', String(Audio_.muted));
+  $('#vol').classList.toggle('muted', Audio_.muted);
+  if (!live) {
+    document.querySelectorAll('.chord-card.playing').forEach((el) => el.classList.remove('playing'));
+    renderBeatDots(-1);
+  }
+  document.querySelectorAll('[data-action="play-scale"]').forEach((b) => {
+    b.textContent = Player.playing && Player.mode === 'scale' ? '■' : '▶';
+  });
+  document.querySelectorAll('[data-action="play-lick"]').forEach((b) => {
+    b.textContent = Player.playing && Player.mode === 'lick' ? '■ stop' : '▶ hear it';
+  });
+}
+
+function wirePlayer() {
+  Player.onState = syncTransport;
+  Player.onChord = (idx, seconds) => {
+    if (Player.follow && state.focus !== idx) { state.focus = idx; if (state.tab === 'studio') render(); }
+    markPlayingCard(idx, seconds);
+    const chord = state.chords[idx];
+    if (chord) {
+      pingChordNotes(chord, Math.min(seconds, 1.2));
+      $('#fret-status').textContent = `Playing ${chordSymbol(chord)} — chord ${idx + 1} of ${state.chords.length}`;
+    }
+  };
+  Player.onBeat = (b) => renderBeatDots(b);
+  Player.onNote = (n, seconds) => {
+    pingFret(n.s, n.f, Math.min(seconds, 1));
+    noteStatus(n.s, n.f);
+  };
 }
 
 /* ================= Events ================= */
@@ -518,6 +648,7 @@ function wireEvents() {
         renderFretboardPanel();
       }
       Audio_.playFret(st, f);
+      pingFret(st, f, 0.8);
       noteStatus(st, f);
       return;
     }
@@ -528,7 +659,9 @@ function wireEvents() {
     else if (a === 'theme') {
       state.theme = { dark: 'light', light: 'auto', auto: 'dark' }[state.theme];
       applyTheme();
+      persist();
     }
+    else if (a === 'mute') { Audio_.setMuted(!Audio_.muted); syncTransport(); persist(); }
     else if (a === 'add-chord') {
       if (state.chords.length < 12) {
         const last = state.chords[state.chords.length - 1];
@@ -546,16 +679,26 @@ function wireEvents() {
       }
     }
     else if (a === 'focus-chord') { state.focus = +el.dataset.idx; render(); }
-    else if (a === 'play-chord') { ev.stopPropagation(); Audio_.playChord(state.chords[+el.dataset.idx]); }
-    else if (a === 'play-prog') Audio_.playProgression(state.chords);
+    else if (a === 'play-chord') {
+      ev.stopPropagation();
+      const c = state.chords[+el.dataset.idx];
+      Audio_.playChord(c);
+      pingChordNotes(c, 1.2);
+    }
+    else if (a === 'play-prog') Player.toggleProgression(() => state.chords);
     else if (a === 'set-root') { state.chords[state.focus].root = +el.dataset.pc; render(); }
     else if (a === 'set-type') { state.chords[state.focus].type = el.dataset.key; render(); }
     else if (a === 'toggle-scale') toggleScale(+el.dataset.root, el.dataset.key);
     else if (a === 'remove-scale') { state.selected.splice(+el.dataset.i, 1); render(); }
-    else if (a === 'play-scale') { const s = state.selected[+el.dataset.i]; Audio_.playScale(s.root, s.key); }
+    else if (a === 'play-scale') {
+      const s = state.selected[+el.dataset.i];
+      if (Player.playing && Player.mode === 'scale') Player.stop();
+      else Player.playLine(positionScaleRun(s.root, s.key), 'scale', 0.5, 3);
+    }
     else if (a === 'play-lick') {
       const steps = generateLickSteps() || [];
-      steps.forEach(([st, f], i) => Audio_.pluck(OPEN_MIDI[st] + f, i * 0.24, 0.7, 0.85));
+      if (Player.playing && Player.mode === 'lick') Player.stop();
+      else Player.playLine(steps.map(([s, f]) => ({ s, f, midi: OPEN_MIDI[s] + f, pc: mod12(OPEN_MIDI[s] + f) })), 'lick', 0.5, 4);
     }
     else if (a === 'pos-prev') { state.posIndex = Math.max(0, state.posIndex - 1); renderFretboardPanel(); }
     else if (a === 'pos-next') { state.posIndex += 1; renderFretboardPanel(); }
@@ -583,9 +726,34 @@ function wireEvents() {
 
   document.addEventListener('change', (ev) => {
     const el = ev.target;
-    if (el.id === 'label-mode') { state.labelMode = el.value; renderFretboardPanel(); }
-    else if (el.id === 'view-mode') { state.view = el.value; state.posIndex = 0; renderFretboardPanel(); }
-    else if (el.id === 'opt-roots') { state.emphasizeRoots = el.checked; renderFretboardPanel(); }
+    if (el.id === 'label-mode') { state.labelMode = el.value; renderFretboardPanel(); persist(); }
+    else if (el.id === 'view-mode') { state.view = el.value; state.posIndex = 0; renderFretboardPanel(); persist(); }
+    else if (el.id === 'opt-roots') { state.emphasizeRoots = el.checked; renderFretboardPanel(); persist(); }
+    else if (el.id === 'beats') { Player.beats = +el.value; renderBeatDots(-1); syncTransport(); persist(); }
+    else if (el.id === 'opt-loop') { Player.loop = el.checked; syncTransport(); persist(); }
+    else if (el.id === 'opt-follow') { Player.follow = el.checked; persist(); }
+  });
+  document.addEventListener('input', (ev) => {
+    const el = ev.target;
+    if (el.id === 'bpm') { Player.bpm = +el.value; $('#bpm-val').textContent = Player.bpm; }
+    else if (el.id === 'vol') {
+      Audio_.setVolume(+el.value / 100);
+      if (Audio_.muted && +el.value > 0) Audio_.setMuted(false);
+      syncTransport();
+    }
+  });
+  document.addEventListener('pointerup', (ev) => { if (ev.target.id === 'bpm' || ev.target.id === 'vol') persist(); });
+
+  // Keyboard: space plays/stops the progression, Esc stops everything.
+  document.addEventListener('keydown', (ev) => {
+    const tag = (ev.target.tagName || '').toLowerCase();
+    if (['input', 'select', 'textarea'].includes(tag)) return;
+    if (ev.code === 'Space' && !ev.repeat && state.tab === 'studio' && !$('#splash')) {
+      ev.preventDefault();
+      Player.toggleProgression(() => state.chords);
+    } else if (ev.key === 'Escape' && Player.playing) {
+      Player.stop();
+    }
   });
 
   $('#lib-search').addEventListener('input', (ev) => {
@@ -608,7 +776,6 @@ function applyTheme() {
 function wireSplash() {
   const splash = $('#splash');
   if (!splash) return;
-  const FREQS = [329.63, 246.94, 196.0, 146.83, 110.0, 82.41];
   const NAMES = ['e', 'B', 'G', 'D', 'A', 'E'];
   const amps = [0, 0, 0, 0, 0, 0];
   let raf = null, cycle = null;
@@ -670,28 +837,8 @@ function wireSplash() {
   function hit(i, level) { amps[i] = Math.min(1, level == null ? 1 : level); paint(); decay(); }
   function pluckAudio(i, level) {
     try {
-      const ctx = Audio_.get();
-      const t = ctx.currentTime;
-      const f = FREQS[i];
-      const g = ctx.createGain();
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.16 * (level || 1), t + 0.012);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
-      const lp = ctx.createBiquadFilter();
-      lp.type = 'lowpass';
-      lp.frequency.setValueAtTime(2600, t);
-      lp.frequency.exponentialRampToValueAtTime(700, t + 1.6);
-      [[1, 1], [2, 0.32], [3, 0.14]].forEach(([mult, amp]) => {
-        const o = ctx.createOscillator();
-        o.type = mult === 1 ? 'triangle' : 'sine';
-        o.frequency.value = f * mult;
-        const og = ctx.createGain();
-        og.gain.value = amp;
-        o.connect(og).connect(lp);
-        o.start(t);
-        o.stop(t + 2.3);
-      });
-      lp.connect(g).connect(Audio_.master);
+      // Same physical string model as the studio: open string i, let it ring.
+      Audio_.pluck(OPEN_MIDI[i], 0, 2.4, 0.55 + 0.4 * (level == null ? 1 : level), { pan: (2.5 - i) * 0.18 });
     } catch (e) { /* audio optional */ }
   }
   function pluck(i, level) { hit(i, level); pluckAudio(i, level); }
@@ -759,7 +906,11 @@ function wireSplash() {
 
 /* ================= Init ================= */
 state.dockCollapsed = window.innerWidth < 700;
+restore();
 wireEvents();
+wirePlayer();
 wireSplash();
 applyTheme();
 render();
+renderBeatDots(-1);
+syncTransport();
