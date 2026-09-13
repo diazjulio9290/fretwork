@@ -28,6 +28,10 @@
     <button class="tab-btn" data-action="tab" data-tab="studio">Studio</button>
     <button class="tab-btn" data-action="tab" data-tab="library">Library</button>
   </nav>
+  <div class="vol" title="Volume">
+    <button id="mute-btn" class="icon-btn" data-action="mute" aria-label="Mute" aria-pressed="false">🔊</button>
+    <input id="vol" type="range" min="0" max="100" value="80" aria-label="Volume">
+  </div>
   <button id="theme-btn" class="btn theme-btn" data-action="theme" title="Theme">● dark</button>
 </header>
 
@@ -37,10 +41,24 @@
       <section class="sec">
         <div class="sec-head">
           <h2 class="sec-title">Progression</h2>
-          <div class="actions">
-            <span id="prog-count" class="muted small"></span>
-            <button class="btn" data-action="play-prog">▶ Play</button>
-          </div>
+          <span id="prog-count" class="muted small"></span>
+        </div>
+        <div class="transport" role="group" aria-label="Playback">
+          <button id="play-btn" class="btn primary play-btn" data-action="play-prog" aria-pressed="false" title="Play / stop (space)"><span class="play-ico">▶</span><span id="play-label">Play</span></button>
+          <span id="beat-dots" class="beat-dots" aria-hidden="true"></span>
+          <label class="ctl tempo">Tempo
+            <input id="bpm" type="range" min="40" max="220" value="96" aria-label="Tempo in beats per minute">
+            <span id="bpm-val" class="mono">96</span>
+          </label>
+          <label class="ctl">Beats
+            <select id="beats" aria-label="Beats per chord">
+              <option value="2">2 / chord</option>
+              <option value="4" selected>4 / chord</option>
+              <option value="8">8 / chord</option>
+            </select>
+          </label>
+          <label class="chk"><input type="checkbox" id="opt-loop" checked> loop</label>
+          <label class="chk"><input type="checkbox" id="opt-follow" checked> follow</label>
         </div>
         <div id="prog-rail" class="prog-rail"></div>
         <div id="chord-editor"></div>

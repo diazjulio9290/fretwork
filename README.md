@@ -21,7 +21,8 @@ src/
   theory.js     Data layer — notes, chord types, scales, mode families, chord-scale map
   engine.js     Harmony engine — pure functions: matching, spelling, classification
   fretboard.js  SVG fretboard renderer + CAGED windows + 3NPS pattern generator
-  audio.js      Web Audio synth — plucked-string voice, chords, scales, progression
+  audio.js      Web Audio guitar — Karplus–Strong strings, body EQ, room, voicings
+  player.js     Transport — audio-clock scheduler for loops, scale runs and licks
   library.js    Hand-written theory library topics (scales/chords auto-generate)
   ui.js         State, render functions, event delegation
   styles.css    Design tokens (light/dark), layout, components
@@ -84,11 +85,40 @@ Views: full neck, 5 CAGED windows (computed from root positions on strings 6/5/4
 7 three-note-per-string patterns (generated in MIDI space), and free-click custom
 shapes. Clicking any note plays it and explains its role over the focused chord.
 
+## Sound
+
+No samples are shipped; every note is a physically modeled string. `audio.js`
+renders each pitch once with an extended **Karplus–Strong** loop — a period-long
+burst of filtered noise (the pick) circulating through a delay line with a
+one-zero low-pass in the loop, so upper harmonics decay first the way a real
+string's do. Fractional delay keeps tuning within a few cents, a pick-position
+comb filter gives the hollow "near the bridge" tone, and wound strings get more
+damping and longer sustain than plain ones. Buffers are cached (LRU) so a strum
+costs nothing after the first pass.
+
+All voices go through one shared **guitar body**: a high-pass, two resonant
+peaks (≈104 Hz air, ≈212 Hz top plate), a presence lift, a synthesized stereo
+room via `ConvolverNode`, and a compressor so six-string strums never clip.
+Chords are voiced like a guitarist would grab them (`chordMidis`): bass root,
+fifth, colour tones above, root doubled on top — then strummed low→high (or
+high→low for the lighter upstroke on beat 3).
+
+## Transport
+
+`player.js` schedules on the audio clock (sample-accurate) and mirrors each
+event to the UI with timers. The progression loops one chord at a time with a
+300 ms lookahead, so tempo changes and chord edits are heard at the next chord.
+Controls: Play/Stop (also **space**; **Esc** stops), tempo 40–220 BPM, beats per
+chord (2/4/8), loop, and *follow* (focus tracks the playing chord so the neck
+recolours as the harmony moves). Playing notes pulse on the neck; scale runs
+are fingered inside CAGED position 1 so the animation looks like real playing.
+Settings and the current progression persist in `localStorage`.
+
 ## Extending it
 
 - More tunings / 7-string: change `OPEN_MIDI` + `STRING_LABELS`.
-- Chord voicing diagrams, drag-to-reorder progression, save/share progressions
-  (URL-encode `state`), MIDI input, backing-track loop per chord, ear-training mode.
+- Chord voicing diagrams, drag-to-reorder progression, share progressions
+  (URL-encode `state`), MIDI input, metronome click, ear-training mode.
 - Port to React Native/Flutter: keep `theory/engine/fretboard` as-is (pure JS),
   replace `ui.js` + SVG host.
 
