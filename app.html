@@ -1161,7 +1161,7 @@ function renderFretboard(opts) {
   const top = compact ? 12 : 18;
   const nutX = compact ? 26 : 46;
   const W = compact ? 560 : 1440;
-  const H = top + rowH * 5 + (compact ? 26 : 40);
+  const H = top + rowH * 5 + (compact ? 26 : 46);
   const r = compact ? 7.5 : 11;
   const boardTop = top - rowH / 2 - 2;
   const boardH = rowH * 5 + rowH + 4;
@@ -1224,12 +1224,22 @@ function renderFretboard(opts) {
     s += `<text x="${nutX - (compact ? 14 : 24)}" y="${stringY(st) + 3.5}" font-size="${compact ? 9 : 11}" fill="var(--muted)" text-anchor="middle">${STRING_LABELS[st]}</text>`;
   }
 
-  // Fret numbers
-  const numY = boardTop + boardH + (compact ? 12 : 17);
-  for (const f of [...INLAY_FRETS, ...DOUBLE_INLAYS]) {
-    if (f > frets) continue;
+  // Fret numbers: every fret on the full neck, with the inlay frets
+  // (3 5 7 9 12 …) set bolder so the eye can land on them from a distance.
+  // Compact library diagrams keep just the inlay frets.
+  const numY = boardTop + boardH + (compact ? 12 : 21);
+  const landmarks = [...INLAY_FRETS, ...DOUBLE_INLAYS];
+  for (let f = 1; f <= frets; f++) {
+    const landmark = landmarks.includes(f);
+    if (compact && !landmark) continue;
     const cx = (fretX(f - 1, frets, W - 6, nutX) + fretX(f, frets, W - 6, nutX)) / 2;
-    s += `<text x="${cx.toFixed(1)}" y="${numY}" font-size="${compact ? 8.5 : 10.5}" fill="var(--muted)" text-anchor="middle">${f}</text>`;
+    if (compact) {
+      s += `<text x="${cx.toFixed(1)}" y="${numY}" font-size="8.5" fill="var(--muted)" text-anchor="middle">${f}</text>`;
+    } else if (landmark) {
+      s += `<text x="${cx.toFixed(1)}" y="${numY}" font-size="13.5" font-weight="700" fill="var(--ink)" text-anchor="middle">${f}</text>`;
+    } else {
+      s += `<text x="${cx.toFixed(1)}" y="${numY}" font-size="10.5" fill="var(--muted)" text-anchor="middle" opacity="0.8">${f}</text>`;
+    }
   }
 
   // Note markers
